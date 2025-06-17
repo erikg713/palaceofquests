@@ -33,3 +33,21 @@ export default function Home() {
     </div>
   );
 }
+import { useContext } from 'react';
+import { PiWalletContext } from '../context/PiWalletContext';
+
+export default function Home() {
+  const { walletAddress, connectWallet } = useContext(PiWalletContext);
+
+  return (
+    <div className="home">
+      <h1>Palace of Quests 🏰</h1>
+      <p>The Pi-powered metaverse adventure begins.</p>
+      {walletAddress ? (
+        <p>Connected as: {walletAddress}</p>
+      ) : (
+        <button onClick={connectWallet}>Connect Pi Wallet</button>
+      )}
+    </div>
+  );
+}
