@@ -1,0 +1,51 @@
+.home-container {
+  background: linear-gradient(to right, #0d0c1d, #2c2c54);
+  color: #fff;
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: 'Cinzel', serif;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  color: #f4c430;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+}
+
+.hero button {
+  background: violet;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.features {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid violet;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 1rem;
+  width: 280px;
+  transition: transform 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: scale(1.05);
+}
