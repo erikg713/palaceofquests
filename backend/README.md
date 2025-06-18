@@ -1,5 +1,5 @@
 ### Python Backend Setup ###
-bash
+```bash
 Copy
 Edit
 python -m venv env
