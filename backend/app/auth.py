@@ -29,3 +29,7 @@ def verify_user(identity_payload: str, signature: str) -> dict:
     except Exception as e:
         raise ValueError(f"Authentication failed: {str(e)}")
 
+# Simulates verifying Pi wallet auth for now
+def verify_pi_wallet(wallet_address: str, signature: str):
+    # TODO: Replace with actual Pi SDK call
+    return wallet_address.startswith("pi_") and len(signature) > 0
