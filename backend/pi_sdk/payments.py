@@ -1,5 +1,3 @@
-# backend/pi_sdk/payments.py
-
 import uuid
 from flask import current_app
 
