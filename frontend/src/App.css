@@ -1,0 +1,26 @@
+:root {
+  --primary-color: #0070f3;
+  --text-color: #333;
+}
+
+.navigation-list {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navigation-list a:hover {
+  text-decoration: underline;
+}
+
+.main-content {
+  padding: 2rem 0;
+}
+
+.loader {
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
