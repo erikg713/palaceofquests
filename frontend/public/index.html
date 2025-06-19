@@ -1,1 +1,20 @@
+// index.html includes Pi SDK script from Pi dev portal
+async function loginWithPi() {
+  const { account } = await Pi.initializer({
+    clientId: 'YOUR_CLIENT_ID',
+    network: 'testnet', // or 'mainnet'
+  });
+
+  const authResponse = await account.requestAuth({
+    app: { name: 'Palace of Quests' },
+    permissions: ['testnet_access'],
+  });
+
+  if (authResponse.status === 'success') {
+    console.log('Logged in as:', authResponse.account.username);
+    return authResponse.account;
+  } else {
+    console.error('Login failed:', authResponse.error);
+  }
+}
 
