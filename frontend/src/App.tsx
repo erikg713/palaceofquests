@@ -1,28 +1,54 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../utils/supabase';
 
-import { useState, useEffect } from 'react'
-import { supabase } from '../utils/supabase'
+interface Todo {
+  id: number;
+  title: string;
+}
 
 function Page() {
-  const [todos, setTodos] = useState([])
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    function getTodos() {
-      const { data: todos } = await supabase.from('todos').select()
+    const getTodos = async () => {
+      try {
+        const { data, error } = await supabase.from('todos').select();
 
-      if (todos.length > 1) {
-        setTodos(todos)
+        if (error) {
+          setError('Failed to fetch todos');
+          console.error(error);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          setTodos(data);
+        } else {
+          setTodos([]);
+        }
+      } catch (err) {
+        setError('Unexpected error occurred');
+        console.error(err);
       }
-    }
+    };
 
-    getTodos()
-  }, [])
+    getTodos();
+  }, []);
 
   return (
     <div>
-      {todos.map((todo) => (
-        <li key={todo}>{todo}</li>
-      ))}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {todos.length > 0 ? (
+        <ul>
+          {todos.map((todo) => (
+            <li key={todo.id}>{todo.title}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>No todos available.</p>
+      )}
     </div>
-  )
+  );
 }
-export default Page
+
+export default Page;
