@@ -1,113 +1,82 @@
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-  Pi.init({ version: "2.0", sandbox: true }); // set sandbox:false for mainnet
-</script>
 
-<script>
-  /**
-   * Authenticates a user via the Pi Network SDK.
-   * Handles SDK initialization, authentication flow, and error management.
-   * Designed for clarity, extensibility, and seamless integration.
-   */
-  async function loginWithPi() {
-    // Replace with your actual client ID and set network to 'mainnet' in production.
-    const clientId = 'YOUR_CLIENT_ID';
-    const network = 'testnet';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Palace of Quests</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #fafafa; margin: 40px; }
+    #pi-login-btn { padding: 0.6em 1.2em; font-size: 1rem; border-radius: 5px; border: none; background: #865DFF; color: #fff; cursor: pointer; }
+    #pi-login-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+    #login-status { margin-top: 16px; color: #222; font-weight: 500; min-height: 24px; transition: color 0.2s; }
+    #login-status.error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <button id="pi-login-btn">Login with Pi Network</button>
+  <div id="login-status"></div>
 
-    try {
-      // Initialize Pi SDK
-      const { account } = await Pi.initializer({ clientId, network });
+  <script>
+    // Configuration: Replace with your actual Pi client ID and set to "mainnet" for production
+    const PI_CLIENT_ID = "YOUR_CLIENT_ID";
+    const PI_NETWORK = "testnet";
 
-      // Request user authentication
-      const authResponse = await account.requestAuth({
-        app: { name: 'Palace of Quests' },
-        permissions: ['testnet_access'],
-      });
+    const loginBtn = document.getElementById("pi-login-btn");
+    const statusMsg = document.getElementById("login-status");
 
-      if (authResponse.status === 'success' && authResponse.account) {
-        console.info(`Logged in as: ${authResponse.account.username}`);
+    async function loginWithPi() {
+      setStatus("Connecting to Pi Network…", false);
+      loginBtn.disabled = true;
 
-        // Optionally, trigger UI updates or backend sync here
-        // Example: updateUserUI(authResponse.account);
+      try {
+        const { account } = await Pi.initializer({ clientId: PI_CLIENT_ID, network: PI_NETWORK });
+        const authResponse = await account.requestAuth({
+          app: { name: "Palace of Quests" },
+          permissions: ["testnet_access"],
+        });
 
-        return authResponse.account;
-      } else {
-        const message = authResponse.error || 'Login failed for an unknown reason.';
-        console.warn(`Login failed: ${message}`);
-        // Optionally, display a user-friendly message in your UI here
-        return null;
+        if (authResponse.status === "success" && authResponse.account) {
+          setStatus(`Logged in as: ${authResponse.account.username}`);
+          await sendLoginToBackend(authResponse.accessToken);
+        } else {
+          throw new Error(authResponse.error || "Login failed. Please try again.");
+        }
+      } catch (err) {
+        setStatus(err.message || "Unexpected error during login.", true);
+        // Optionally, report errors to analytics service here
+      } finally {
+        loginBtn.disabled = false;
       }
-    } catch (err) {
-      // Handles unexpected errors such as network or SDK issues
-      console.error('Unexpected error during Pi login:', err);
-      // Optionally, show a generic error message to the user here
-      return null;
     }
-  }
-</script>
-<script>
-  // DOM elements for user feedback
-  const loginBtn = document.getElementById("pi-login-btn");
-  const statusMsg = document.getElementById("login-status");
 
-  async function loginWithPi() {
-    statusMsg.textContent = "Connecting to Pi Network…";
-    loginBtn.disabled = true;
+    async function sendLoginToBackend(accessToken) {
+      try {
+        const res = await fetch("/api/pi-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ access_token: accessToken }),
+        });
 
-    const clientId = "YOUR_CLIENT_ID"; // Replace with your real Pi client ID
-    const network = "testnet"; // Change to 'mainnet' in production
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error("Backend rejected login: " + err);
+        }
 
-    try {
-      const { account } = await Pi.initializer({ clientId, network });
-
-      const authResponse = await account.requestAuth({
-        app: { name: "Palace of Quests" },
-        permissions: ["testnet_access"],
-      });
-
-      if (authResponse.status === "success" && authResponse.account) {
-        statusMsg.textContent = `Logged in as: ${authResponse.account.username}`;
-        // Send the token to backend for verification and session storage
-        await sendLoginToBackend(authResponse.accessToken);
-        // You can update UI or trigger further actions here
-      } else {
-        showError(authResponse.error || "Login failed. Please try again.");
-      }
-    } catch (err) {
-      showError("Could not log in. Please check your connection and try again.");
-      console.error("Pi login error:", err);
-    } finally {
-      loginBtn.disabled = false;
-    }
-  }
-
-  async function sendLoginToBackend(accessToken) {
-    try {
-      const res = await fetch("/api/pi-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ access_token: accessToken }),
-      });
-
-      if (res.ok) {
         const data = await res.json();
-        statusMsg.textContent = `Welcome, ${data.username}!`;
-      } else {
-        const err = await res.text();
-        showError("Backend rejected login: " + err);
+        setStatus(`Welcome, ${data.username}!`);
+      } catch (err) {
+        setStatus("Network error: " + err.message, true);
       }
-    } catch (err) {
-      showError("Network error during backend login.");
-      console.error("Backend login error:", err);
     }
-  }
 
-  function showError(message) {
-    statusMsg.textContent = message;
-    statusMsg.style.color = "#b00020";
-  }
-</script>
+    function setStatus(message, isError = false) {
+      statusMsg.textContent = message;
+      statusMsg.className = isError ? "error" : "";
+    }
 
-<!-- Example HTML -->
-<button id="pi-login-btn" onclick="loginWithPi()">Login with Pi Network</button>
-<div id="login-status"></div>
+    // Attach event handler (ensures no global scope pollution)
+    loginBtn.addEventListener("click", loginWithPi);
+  </script>
+</body>
+</html>
