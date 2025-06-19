@@ -1,40 +1,54 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Home from './pages/Home';
-import Inventory from './pages/Inventory';
-import Marketplace from './pages/Marketplace';
-import Quests from './pages/Quests';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+
+// Lazy load pages for better performance
+const Home = lazy(() => import('./pages/Home'));
+const Inventory = lazy(() => import('./pages/Inventory'));
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const Quests = lazy(() => import('./pages/Quests'));
+
+const navLinks = [
+  { path: '/', label: 'Home', exact: true },
+  { path: '/inventory', label: 'Inventory' },
+  { path: '/marketplace', label: 'Marketplace' },
+  { path: '/quests', label: 'Quests' },
+];
 
 export default function App() {
   return (
     <Router>
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/inventory">Inventory</Link>
-        <Link to="/marketplace">Marketplace</Link>
-        <Link to="/quests">Quests</Link>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/quests" element={<Quests />} />
-      </Routes>
+      <header>
+        <nav aria-label="Main navigation">
+          <ul style={{ display: 'flex', gap: '1.5rem', listStyle: 'none', padding: 0, margin: 0 }}>
+            {navLinks.map(({ path, label, exact }) => (
+              <li key={path}>
+                <NavLink
+                  to={path}
+                  end={exact}
+                  style={({ isActive }) => ({
+                    color: isActive ? '#0070f3' : '#333',
+                    textDecoration: 'none',
+                    fontWeight: isActive ? 'bold' : 'normal',
+                  })}
+                  aria-current={window.location.pathname === path ? 'page' : undefined}
+                >
+                  {label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </header>
+      <main style={{ padding: '2rem 0' }}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/quests" element={<Quests />} />
+          </Routes>
+        </Suspense>
+      </main>
     </Router>
   );
 }
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import { PiWalletProvider } from './context/PiWalletContext.jsx';
-import { mockPiSDK } from './utils/mockPi.js';
-
-mockPiSDK();
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <PiWalletProvider>
-      <App />
-    </PiWalletProvider>
-  </React.StrictMode>
-);
