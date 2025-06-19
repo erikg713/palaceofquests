@@ -1,15 +1,18 @@
 from fastapi import FastAPI
-from app.routes import players, quests, dao
+from app.routes import players, quests
+from app.api import auth, users
 
+app = FastAPI()
+app.include_router(auth.router)
+app.include_router(users.router)
 app = FastAPI(title="Palace of Quests API")
 
 app.include_router(players.router, prefix="/api/players", tags=["Players"])
 app.include_router(quests.router, prefix="/api/quests", tags=["Quests"])
-app.include_router(dao.router, prefix="/api/dao", tags=["DAO Voting"])
 
 @app.get("/")
 def index():
-    return {"message": "Welcome to Palace of Quests API"}
+    return {"message": "Welcome to Palace of Quests"}
 
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
