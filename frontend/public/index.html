@@ -41,3 +41,69 @@
     }
   }
 </script>
+<script>
+  // DOM elements for user feedback
+  const loginBtn = document.getElementById("pi-login-btn");
+  const statusMsg = document.getElementById("login-status");
+
+  async function loginWithPi() {
+    statusMsg.textContent = "Connecting to Pi Network…";
+    loginBtn.disabled = true;
+
+    const clientId = "YOUR_CLIENT_ID"; // Replace with your real Pi client ID
+    const network = "testnet"; // Change to 'mainnet' in production
+
+    try {
+      const { account } = await Pi.initializer({ clientId, network });
+
+      const authResponse = await account.requestAuth({
+        app: { name: "Palace of Quests" },
+        permissions: ["testnet_access"],
+      });
+
+      if (authResponse.status === "success" && authResponse.account) {
+        statusMsg.textContent = `Logged in as: ${authResponse.account.username}`;
+        // Send the token to backend for verification and session storage
+        await sendLoginToBackend(authResponse.accessToken);
+        // You can update UI or trigger further actions here
+      } else {
+        showError(authResponse.error || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      showError("Could not log in. Please check your connection and try again.");
+      console.error("Pi login error:", err);
+    } finally {
+      loginBtn.disabled = false;
+    }
+  }
+
+  async function sendLoginToBackend(accessToken) {
+    try {
+      const res = await fetch("/api/pi-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access_token: accessToken }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        statusMsg.textContent = `Welcome, ${data.username}!`;
+      } else {
+        const err = await res.text();
+        showError("Backend rejected login: " + err);
+      }
+    } catch (err) {
+      showError("Network error during backend login.");
+      console.error("Backend login error:", err);
+    }
+  }
+
+  function showError(message) {
+    statusMsg.textContent = message;
+    statusMsg.style.color = "#b00020";
+  }
+</script>
+
+<!-- Example HTML -->
+<button id="pi-login-btn" onclick="loginWithPi()">Login with Pi Network</button>
+<div id="login-status"></div>
