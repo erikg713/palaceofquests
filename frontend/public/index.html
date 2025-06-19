@@ -1,20 +1,43 @@
-// index.html includes Pi SDK script from Pi dev portal
-async function loginWithPi() {
-  const { account } = await Pi.initializer({
-    clientId: 'YOUR_CLIENT_ID',
-    network: 'testnet', // or 'mainnet'
-  });
+<!-- index.html includes Pi SDK script from Pi dev portal -->
+<script>
+  /**
+   * Authenticates a user via the Pi Network SDK.
+   * Handles SDK initialization, authentication flow, and error management.
+   * Designed for clarity, extensibility, and seamless integration.
+   */
+  async function loginWithPi() {
+    // Replace with your actual client ID and set network to 'mainnet' in production.
+    const clientId = 'YOUR_CLIENT_ID';
+    const network = 'testnet';
 
-  const authResponse = await account.requestAuth({
-    app: { name: 'Palace of Quests' },
-    permissions: ['testnet_access'],
-  });
+    try {
+      // Initialize Pi SDK
+      const { account } = await Pi.initializer({ clientId, network });
 
-  if (authResponse.status === 'success') {
-    console.log('Logged in as:', authResponse.account.username);
-    return authResponse.account;
-  } else {
-    console.error('Login failed:', authResponse.error);
+      // Request user authentication
+      const authResponse = await account.requestAuth({
+        app: { name: 'Palace of Quests' },
+        permissions: ['testnet_access'],
+      });
+
+      if (authResponse.status === 'success' && authResponse.account) {
+        console.info(`Logged in as: ${authResponse.account.username}`);
+
+        // Optionally, trigger UI updates or backend sync here
+        // Example: updateUserUI(authResponse.account);
+
+        return authResponse.account;
+      } else {
+        const message = authResponse.error || 'Login failed for an unknown reason.';
+        console.warn(`Login failed: ${message}`);
+        // Optionally, display a user-friendly message in your UI here
+        return null;
+      }
+    } catch (err) {
+      // Handles unexpected errors such as network or SDK issues
+      console.error('Unexpected error during Pi login:', err);
+      // Optionally, show a generic error message to the user here
+      return null;
+    }
   }
-}
-
+</script>
