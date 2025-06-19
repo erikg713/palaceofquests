@@ -1,18 +1,45 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, status
+from app.dependencies import get_supabase  # Supabase client dependency
+from supabase import Client
+
+# --- Pydantic Schemas ---
 
 class PlayerBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=32, example="adventurer42")
-    email: EmailStr = Field(..., example="hero@example.com")
+    username: str = Field(
+        ...,
+        min_length=3,
+        max_length=32,
+        regex="^[a-zA-Z0-9_]+$",
+        example="adventurer42",
+        description="Unique username for the player. Alphanumeric and underscores only."
+    )
+    email: EmailStr = Field(
+        ...,
+        example="hero@example.com",
+        description="Email address for the player."
+    )
 
 class PlayerCreate(PlayerBase):
-    pass  # Add fields like 'password' if needed
+    # If authentication is needed, uncomment the password field and add suitable validation
+    # password: str = Field(..., min_length=8, example="strongpassword123")
+    pass
 
 class PlayerUpdate(BaseModel):
-    username: Optional[str] = Field(None, min_length=3, max_length=32, example="newhero")
-    email: Optional[EmailStr] = Field(None, example="newhero@example.com")
-    # Add more optional fields if your table has them
+    username: Optional[str] = Field(
+        None,
+        min_length=3,
+        max_length=32,
+        regex="^[a-zA-Z0-9_]+$",
+        example="newhero"
+    )
+    email: Optional[EmailStr] = Field(
+        None,
+        example="newhero@example.com"
+    )
+    # Add more optional fields as needed
 
 class PlayerRead(PlayerBase):
     id: int
@@ -20,32 +47,8 @@ class PlayerRead(PlayerBase):
 
     class Config:
         orm_mode = True
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
-from datetime import datetime
 
-class PlayerBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=32, example="adventurer42")
-    email: EmailStr = Field(..., example="hero@example.com")
-
-class PlayerCreate(PlayerBase):
-    pass  # Add fields like 'password' if needed
-
-class PlayerUpdate(BaseModel):
-    username: Optional[str] = Field(None, min_length=3, max_length=32, example="newhero")
-    email: Optional[EmailStr] = Field(None, example="newhero@example.com")
-    # Add more optional fields if your table has them
-
-class PlayerRead(PlayerBase):
-    id: int
-    created_at: datetime
-
-    class Config:
-        orm_mode = Truefrom fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
-from app.schemas.player import PlayerCreate, PlayerUpdate, PlayerRead
-from app.dependencies import get_supabase  # Your supabase client dependency
-from supabase import Client
+# --- API Router ---
 
 router = APIRouter(
     prefix="/players",
@@ -54,21 +57,21 @@ router = APIRouter(
 
 @router.get("/", response_model=List[PlayerRead])
 def list_players(
-    skip: int = 0, 
-    limit: int = 20, 
+    skip: int = 0,
+    limit: int = 20,
     supabase: Client = Depends(get_supabase)
 ):
     """
-    List players with pagination.
+    Retrieve a paginated list of players.
     """
     result = supabase.table("players").select("*").range(skip, skip + limit - 1).execute()
     if result.error:
-        raise HTTPException(status_code=500, detail="Failed to fetch players.")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch players: {result.error}")
     return result.data
 
 @router.post("/", response_model=PlayerRead, status_code=status.HTTP_201_CREATED)
 def create_player(
-    player: PlayerCreate, 
+    player: PlayerCreate,
     supabase: Client = Depends(get_supabase)
 ):
     """
@@ -77,48 +80,48 @@ def create_player(
     data = player.dict()
     result = supabase.table("players").insert(data).single().execute()
     if result.error:
-        raise HTTPException(status_code=400, detail=str(result.error))
+        raise HTTPException(status_code=400, detail=f"Error creating player: {result.error}")
     return result.data
 
 @router.get("/{player_id}", response_model=PlayerRead)
 def get_player(
-    player_id: int, 
+    player_id: int,
     supabase: Client = Depends(get_supabase)
 ):
     """
-    Get a player by ID.
+    Retrieve player details by ID.
     """
     result = supabase.table("players").select("*").eq("id", player_id).single().execute()
-    if result.error or result.data is None:
-        raise HTTPException(status_code=404, detail="Player not found.")
+    if result.error or not result.data:
+        raise HTTPException(status_code=404, detail=f"Player with ID {player_id} not found.")
     return result.data
 
 @router.put("/{player_id}", response_model=PlayerRead)
 def update_player(
-    player_id: int, 
-    player_update: PlayerUpdate, 
+    player_id: int,
+    player_update: PlayerUpdate,
     supabase: Client = Depends(get_supabase)
 ):
     """
-    Update a player by ID.
+    Update a player's information by ID.
     """
-    data = {k: v for k, v in player_update.dict().items() if v is not None}
+    data = {k: v for k, v in player_update.dict(exclude_unset=True).items() if v is not None}
     if not data:
-        raise HTTPException(status_code=400, detail="No fields to update.")
+        raise HTTPException(status_code=400, detail="No fields provided for update.")
     result = supabase.table("players").update(data).eq("id", player_id).single().execute()
-    if result.error or result.data is None:
-        raise HTTPException(status_code=404, detail="Player not found or update failed.")
+    if result.error or not result.data:
+        raise HTTPException(status_code=404, detail=f"Player with ID {player_id} not found or update failed.")
     return result.data
 
 @router.delete("/{player_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_player(
-    player_id: int, 
+    player_id: int,
     supabase: Client = Depends(get_supabase)
 ):
     """
     Delete a player by ID.
     """
     result = supabase.table("players").delete().eq("id", player_id).execute()
-    if result.error or (isinstance(result.data, list) and len(result.data) == 0):
-        raise HTTPException(status_code=404, detail="Player not found or delete failed.")
+    if result.error or (isinstance(result.data, list) and not result.data):
+        raise HTTPException(status_code=404, detail=f"Player with ID {player_id} not found or delete failed.")
     return
