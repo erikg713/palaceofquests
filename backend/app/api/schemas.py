@@ -3,7 +3,14 @@ from typing import List
 from app.schemas.players import PlayerCreate, PlayerUpdate, PlayerRead
 from app.dependencies import get_supabase
 from supabase import Client
+import logging
 
+logger = logging.getLogger(__name__)
+
+if result.error:
+    logger.error(f"Failed to fetch players: {result.error}")
+    raise HTTPException(status_code=500, detail="Failed to fetch players.")
+    
 router = APIRouter(
     prefix="/players",
     tags=["players"],
