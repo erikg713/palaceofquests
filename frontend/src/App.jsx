@@ -67,7 +67,6 @@ const usePayment = (uid) => {
 };
 
 // Main App Component
-export default function App() {
   const uid = process.env.REACT_APP_USER_ID || 'test_user_123';
   const { rewardStatus, rewardUser } = usePayment(uid);
 
