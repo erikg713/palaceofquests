@@ -1,4 +1,3 @@
-markdown name=database/README.md
 # Palace of Quests Database
 
 This directory contains all SQL resources for the Palace of Quests platform.
