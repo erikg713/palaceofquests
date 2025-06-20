@@ -4,6 +4,24 @@ import './App.css';
 import { useState, useEffect } from 'react';
 import QuestLog from './components/QuestLog';
 import { authenticateWithPi } from './auth/piAuth';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import Quests from './pages/Quests'
+import Marketplace from './pages/Marketplace'
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/quests" element={<Quests />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+      </Routes>
+    </Router>
+  )
+}
+
+export default App
 
 export default function App() {
   const [user, setUser] = useState(null);
