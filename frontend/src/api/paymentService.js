@@ -1,5 +1,5 @@
 // src/api/paymentService.js
-const BASE_URL = 'http://localhost:5000/payment'; // change to your actual backend URL
+const BASE_URL = 'http://localhost:5000'; 
 
 export const createA2UPayment = async (data) => {
   const res = await fetch(`${BASE_URL}/a2u`, {
