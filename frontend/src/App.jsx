@@ -1,13 +1,11 @@
-import React, { Suspense, lazy, memo } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import usePayment from './hooks/usePayment'; // Custom hook moved to a separate file
+import React, { useState, useCallback, memo } from 'react';
 import './App.css';
-import { useState } from 'react';
 
-function App() {
+// Custom hook for Pi authentication and payment
+function usePiAuth() {
   const [user, setUser] = useState(null);
 
-  const loginWithPi = async () => {
+  const loginWithPi = useCallback(async () => {
     try {
       const scopes = ['username', 'payments'];
       const auth = await window.Pi.authenticate(scopes, (payment) => {
@@ -18,37 +16,55 @@ function App() {
     } catch (err) {
       console.error('Login error:', err);
     }
-  };
+  }, []);
+
+  const unlockQuest = useCallback(() => {
+    window.Pi.createPayment(
+      {
+        amount: 5,
+        memo: 'Unlock Dragon Quest',
+        metadata: { questId: 'dragon01' },
+      },
+      {
+        onReadyForServerApproval(paymentId) {
+          console.log('Send paymentId to backend:', paymentId);
+        },
+        onReadyForServerCompletion(paymentId, txid) {
+          console.log('Complete on backend with txid:', txid);
+        },
+        onCancel(paymentId) {
+          console.log('User canceled payment:', paymentId);
+        },
+        onError(error, payment) {
+          console.error('Payment error:', error);
+        },
+      }
+    );
+  }, []);
+
+  return { user, loginWithPi, unlockQuest };
+}
+
+const App = memo(() => {
+  const { user, loginWithPi, unlockQuest } = usePiAuth();
 
   return (
-    <div className="App">
+    <main className="App">
       <h1>Palace of Quests</h1>
       {user ? (
-        <p>Welcome, {user.username}!</p>
+        <>
+          <p>Welcome, <strong>{user.username}</strong>!</p>
+          <button type="button" onClick={unlockQuest}>
+            Unlock Dragon Quest
+          </button>
+        </>
       ) : (
-        <button onClick={loginWithPi}>Login with Pi Wallet</button>
+        <button type="button" onClick={loginWithPi}>
+          Login with Pi Wallet
+        </button>
       )}
-    </div>
+    </main>
   );
-}
-const unlockQuest = () => {
-  window.Pi.createPayment({
-    amount: 5,
-    memo: 'Unlock Dragon Quest',
-    metadata: { questId: 'dragon01' }
-  }, {
-    onReadyForServerApproval(paymentId) {
-      console.log('Send paymentId to backend:', paymentId);
-    },
-    onReadyForServerCompletion(paymentId, txid) {
-      console.log('Complete on backend with txid:', txid);
-    },
-    onCancel(paymentId) {
-      console.log('User canceled payment:', paymentId);
-    },
-    onError(error, payment) {
-      console.error('Payment error:', error);
-    }
-  });
-};
+});
+
 export default App;
