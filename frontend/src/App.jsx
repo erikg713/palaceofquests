@@ -116,3 +116,57 @@ const loginWithPi = async () => {
   }
 };
 export default App;
+
+import { useEffect, useState } from 'react';
+
+function App() {
+  const [user, setUser] = useState(null);
+  const [quests, setQuests] = useState([]);
+
+  const fetchQuests = async (uid) => {
+    const res = await fetch(`http://localhost:5000/quests/${uid}`);
+    const data = await res.json();
+    setQuests(data.quests);
+  };
+
+  const loginWithPi = async () => {
+    try {
+      const scopes = ['username', 'payments'];
+      const auth = await window.Pi.authenticate(scopes, () => {});
+      setUser(auth.user);
+
+      await fetch('http://localhost:5000/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: auth.accessToken })
+      });
+
+      fetchQuests(auth.user.uid);
+    } catch (err) {
+      console.error('Login error:', err);
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Palace of Quests</h1>
+      {user ? (
+        <>
+          <p>Welcome, {user.username}</p>
+          <ul>
+            {quests.map(q => (
+              <li key={q.id}>
+                <strong>{q.title}</strong> – {q.status}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <button onClick={loginWithPi}>Login with Pi Wallet</button>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
