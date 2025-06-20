@@ -31,5 +31,24 @@ function App() {
     </div>
   );
 }
-
+const unlockQuest = () => {
+  window.Pi.createPayment({
+    amount: 5,
+    memo: 'Unlock Dragon Quest',
+    metadata: { questId: 'dragon01' }
+  }, {
+    onReadyForServerApproval(paymentId) {
+      console.log('Send paymentId to backend:', paymentId);
+    },
+    onReadyForServerCompletion(paymentId, txid) {
+      console.log('Complete on backend with txid:', txid);
+    },
+    onCancel(paymentId) {
+      console.log('User canceled payment:', paymentId);
+    },
+    onError(error, payment) {
+      console.error('Payment error:', error);
+    }
+  });
+};
 export default App;
