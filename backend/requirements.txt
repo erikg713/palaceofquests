@@ -4,3 +4,5 @@ requests==2.31.0
 httpx==0.24.0
 python-dotenv==1.0.0
 supabase==0.2.0
+urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
+websockets>=10.0 # not directly required, pinned by Snyk to avoid a vulnerability
