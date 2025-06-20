@@ -127,3 +127,32 @@ router.get('/payment/incomplete', async (req, res) => {
 });
 
 module.exports = router;
+
+
+const express = require('express');
+const router = express.Router();
+const fetch = require('node-fetch');
+
+router.post('/verify', async (req, res) => {
+  const { accessToken } = req.body;
+  if (!accessToken) return res.status(400).json({ error: 'Missing accessToken' });
+
+  try {
+    // Verify token with Pi Network
+    const response = await fetch('https://api.minepi.com/v2/me', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    if (!response.ok) throw new Error('Token verification failed');
+    const user = await response.json();
+
+    // Optionally save session or user to DB
+    console.log('Authenticated Pi user:', user.uid);
+
+    res.json({ user });
+  } catch (err) {
+    res.status(401).json({ error: err.message });
+  }
+});
+
+module.exports = router;
