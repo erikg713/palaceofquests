@@ -1,36 +1,54 @@
+---
 # Palace of Quests Database
 
 This directory contains all SQL resources for the Palace of Quests platform.
 
+---
+
 ## Structure
 
-- **schema.sql**: Main database schema. Run this first.
-- **migrations/**: Incremental migration scripts. Use for production deployments.
-- **seed.sql**: Example data for local/dev environments.
+- **schema.sql**: Main schema—run first to create all tables and indexes.
+- **migrations/**: Ordered migration scripts for production upgrades.
+- **seed.sql**: Sample data for local/dev environments.
 - **functions.sql**: Custom SQL functions, triggers, and views.
+
+---
 
 ## Usage
 
-1. **Setup Database**
-   - Run `schema.sql` to create all tables and indexes.
-   - (Optional) Run each script in `migrations/` in order.
+1. **Initialize Database**
+    ```sh
+    psql -f schema.sql
+    ```
+    - (Optional) Run migration scripts in order:
+    ```sh
+    psql -f migrations/001_init.sql
+    ```
+2. **Seed for Development**
+    ```sh
+    psql -f seed.sql
+    ```
+3. **Add Custom Logic**
+    ```sh
+    psql -f functions.sql
+    ```
 
-2. **Seeding Data**
-   - Run `seed.sql` for sample data (dev/local only).
-
-3. **Custom Logic**
-   - Run `functions.sql` to enable triggers and advanced features.
+---
 
 ## Conventions
 
-- All timestamps use UTC (`WITH TIME ZONE`).
+- All timestamps are UTC (`WITH TIME ZONE`).
+- UUIDs are used for all primary keys.
 - Foreign keys are `NOT NULL` unless truly optional.
-- Indexes are added for frequent lookups.
-- Use UUIDs for all primary keys.
+- Indexes are added for all frequent lookups.
+
+---
 
 ## Migrations
 
-Place new migration scripts in the `migrations/` folder as `NNN_description.sql`, where `NNN` is incremental.
+New migrations go in `migrations/` as `NNN_description.sql` (incremental).
+
+---
 
 ## Example Commands
 
@@ -41,10 +59,16 @@ psql -f seed.sql
 psql -f functions.sql
 ```
 
+---
+
 ## Auth Integration
 
-The `profiles` table links to Supabase's `auth.users` via the `id` UUID.
+- The `profiles` table links to Supabase `auth.users` by UUID.
 
 ---
 
-**For questions or to propose schema changes, open an issue or PR.**
+## Questions & Proposals
+
+For schema changes or questions, please open an issue or PR.
+
+---
