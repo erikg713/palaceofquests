@@ -51,10 +51,42 @@ uvicorn app.main:app --reload --port 4000
 ```
 backend/
 ├── app/
-│   ├── main.py
-│   └── ... (routers, models, services)
-├── requirements.txt
-├── .env
+│   ├── api/                     # All route definitions
+│   │   ├── deps.py              # Dependencies (auth, DB session)
+│   │   ├── routes/
+│   │   │   ├── auth.py          # Pi Wallet auth verification
+│   │   │   ├── quests.py        # Quest CRUD routes
+│   │   │   ├── payments.py      # A2U Pi payment handling
+│   │   │   └── users.py         # User profile/lookup
+│   │   └── __init__.py
+│   │
+│   ├── core/                    # Core logic & configuration
+│   │   ├── config.py            # App settings from .env
+│   │   ├── security.py          # Token verification (e.g., Pi token)
+│   │   └── supabase.py          # Supabase client wrapper
+│   │
+│   ├── models/                  # Pydantic + DB models
+│   │   ├── quest.py
+│   │   ├── user.py
+│   │   └── payment.py
+│   │
+│   ├── services/                # Business logic (use cases)
+│   │   ├── quest_service.py
+│   │   ├── payment_service.py
+│   │   └── user_service.py
+│   │
+│   ├── db/                      # Optional DB setup or ORM logic
+│   │   └── supabase_client.py   # Supabase integration logic
+│   │
+│   └── main.py                  # Entry point (FastAPI app)
+│
+├── tests/                       # Unit and integration tests
+│   ├── test_quests.py
+│   ├── test_auth.py
+│   └── ...
+│
+├── .env                         # Secrets and config (PI keys, Supabase keys)
+├── requirements.txt             # All backend deps
 └── README.md
 ```
 
