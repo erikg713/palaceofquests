@@ -1,24 +1,53 @@
 ---
+# Palace of Quests Python Backend
 
-# Python Backend Setup
+High-performance, asynchronous Python backend powering the Palace of Quests API — designed with FastAPI for modern, scalable, and secure Web3/metaverse applications.
 
-This backend powers the Palace of Quests API using FastAPI for high-performance, asynchronous endpoints.
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Dependencies](#dependencies)
+- [Setup Instructions](#setup-instructions)
+- [Environment Variables](#environment-variables)
+- [Running the Server](#running-the-server)
+- [Project Structure](#project-structure)
+- [API Documentation](#api-documentation)
+- [Best Practices](#best-practices)
+- [Contributing](#contributing)
+
+---
+
+## Overview
+
+This backend serves as the foundation for a decentralized questing platform in the metaverse, supporting:
+- Secure Pi Wallet authentication and payment flows
+- Real-time quest management
+- Integration-ready architecture for on-chain/off-chain interoperability
+
+---
+
+## Prerequisites
+
+- **Python 3.9+**
+- **PostgreSQL** (for Supabase integration)
+- **Supabase account** and API keys
+- **Node.js** (for full-stack development and integration)
+- Linux/macOS/WSL recommended for local development
 
 ---
 
 ## Dependencies
 
-All dependencies are listed in `requirements.txt`:
+All dependencies are managed in `requirements.txt`. Key packages include:
+- `fastapi`: Modern, async Python web framework
+- `uvicorn`: Lightning-fast ASGI server
+- `requests` / `httpx`: Synchronous & async HTTP clients
+- `python-dotenv`: Secure .env config loading
 
-```
-fastapi
-uvicorn
-requests
-httpx
-python-dotenv
-```
-
-Install them with:
+Install with:
 
 ```bash
 python -m venv env
@@ -28,21 +57,30 @@ pip install -r requirements.txt
 
 ---
 
+## Environment Variables
+
+Configure secrets and keys in `.env` (never commit this file):
+
+```env
+DATABASE_URL=postgresql://user:pass@localhost:5432/db
+SUPABASE_URL=https://xyz.supabase.co
+SUPABASE_KEY=your_supabase_key
+PI_API_KEY=your_pi_api_key
+ENV=development
+```
+
+---
+
 ## Running the Server
+
+Start the development server:
 
 ```bash
 uvicorn app.main:app --reload --port 4000
 ```
 
-- `--reload` enables auto-restart on code changes during development.
-- Default port is `4000` (customize as needed).
-
----
-
-## Environment
-
-- Place sensitive configuration in a `.env` file.
-- Backend auto-loads environment variables via `python-dotenv`.
+- Visit [http://localhost:4000/docs](http://localhost:4000/docs) for Swagger UI.
+- Use `--reload` for hot-reloading in development.
 
 ---
 
@@ -51,42 +89,34 @@ uvicorn app.main:app --reload --port 4000
 ```
 backend/
 ├── app/
-│   ├── api/                     # All route definitions
-│   │   ├── deps.py              # Dependencies (auth, DB session)
-│   │   ├── routes/
-│   │   │   ├── auth.py          # Pi Wallet auth verification
-│   │   │   ├── quests.py        # Quest CRUD routes
-│   │   │   ├── payments.py      # A2U Pi payment handling
-│   │   │   └── users.py         # User profile/lookup
-│   │   └── __init__.py
-│   │
-│   ├── core/                    # Core logic & configuration
-│   │   ├── config.py            # App settings from .env
-│   │   ├── security.py          # Token verification (e.g., Pi token)
-│   │   └── supabase.py          # Supabase client wrapper
-│   │
-│   ├── models/                  # Pydantic + DB models
+│   ├── api/
+│   │   ├── deps.py
+│   │   └── routes/
+│   │       ├── auth.py        # Pi Wallet authentication (Web3 ready)
+│   │       ├── quests.py      # Quest CRUD, metaverse logic
+│   │       ├── payments.py    # Decentralized payments (A2U/Pi)
+│   │       └── users.py       # User profile management
+│   ├── core/
+│   │   ├── config.py
+│   │   ├── security.py        # JWT & token verification
+│   │   └── supabase.py        # Supabase client
+│   ├── models/
 │   │   ├── quest.py
 │   │   ├── user.py
 │   │   └── payment.py
-│   │
-│   ├── services/                # Business logic (use cases)
+│   ├── services/
 │   │   ├── quest_service.py
 │   │   ├── payment_service.py
 │   │   └── user_service.py
-│   │
-│   ├── db/                      # Optional DB setup or ORM logic
-│   │   └── supabase_client.py   # Supabase integration logic
-│   │
-│   └── main.py                  # Entry point (FastAPI app)
-│
-├── tests/                       # Unit and integration tests
+│   ├── db/
+│   │   └── supabase_client.py
+│   └── main.py                # App entrypoint
+├── tests/
 │   ├── test_quests.py
 │   ├── test_auth.py
 │   └── ...
-│
-├── .env                         # Secrets and config (PI keys, Supabase keys)
-├── requirements.txt             # All backend deps
+├── .env
+├── requirements.txt
 └── README.md
 ```
 
@@ -94,21 +124,40 @@ backend/
 
 ## API Documentation
 
-Once running, visit: [http://localhost:4000/docs](http://localhost:4000/docs) for interactive Swagger UI.
+- Interactive docs: [http://localhost:4000/docs](http://localhost:4000/docs)
+- OpenAPI schema auto-generated by FastAPI
 
 ---
 
-## Notes
+## Best Practices
 
-- Use `requests` and `httpx` for robust HTTP integrations.
-- The backend is stateless and scalable; deploy behind a WSGI/ASGI server for production.
+- **Security:** All sensitive data handled via environment variables.
+- **Type Safety:** Full type annotations and Pydantic models.
+- **Async-First:** All endpoints are non-blocking/asynchronous.
+- **Web3 Integration:** Ready for wallet auth, decentralized payments, and future smart contract hooks.
+- **Testing:** Write unit/integration tests in `tests/`, run with `pytest`.
+- **Style:** Follow PEP8. Document all modules and endpoint logic.
 
 ---
 
 ## Contributing
 
-- Follow PEP8 style and type annotations where possible.
-- Document all endpoints and business logic.
-- Tests are welcome (pytest preferred).
+1. Fork the repository and create a feature branch.
+2. Follow PEP8, use type annotations, and add docstrings.
+3. Write and update tests as needed.
+4. Submit a pull request with a clear description.
+
+---
+
+## Future Roadmap
+
+- Decentralized identity (DID) support
+- NFT quest rewards and asset tracking
+- Real-time notifications via WebSockets
+- On-chain quest/event logging
+
+---
+
+**Ready to power the next generation of metaverse quests.**
 
 ---
