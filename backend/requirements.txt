@@ -1,6 +1,6 @@
-fastapi
-uvicorn
-requests
-httpx
-python-dotenv
-supabase
+fastapi==0.95.2
+uvicorn==0.22.0
+requests==2.31.0
+httpx==0.24.0
+python-dotenv==1.0.0
+supabase==0.2.0
