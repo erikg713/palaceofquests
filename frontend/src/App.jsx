@@ -95,3 +95,42 @@ export default function App() {
     </Router>
   );
 }
+import { useState } from 'react';
+import { createA2UPayment, submitPayment, completePayment } from './api/paymentService';
+
+function App() {
+  const [rewardStatus, setRewardStatus] = useState(null);
+  const uid = 'test_user_123'; // Replace with real authenticated user ID
+
+  const rewardUser = async () => {
+    try {
+      setRewardStatus('Creating reward...');
+      const { paymentId } = await createA2UPayment({
+        amount: 1,
+        memo: 'Quest reward for Dragon Battle',
+        metadata: { questId: 'dragon01' },
+        uid
+      });
+
+      setRewardStatus('Submitting to Pi chain...');
+      const { txid } = await submitPayment(paymentId);
+
+      setRewardStatus('Completing payment...');
+      const result = await completePayment(paymentId, txid);
+
+      setRewardStatus(`✅ Reward sent: ${result.payment.amount} Pi`);
+    } catch (err) {
+      setRewardStatus(`❌ Error: ${err.message}`);
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Palace of Quests</h1>
+      <button onClick={rewardUser}>Reward Player (1 Pi)</button>
+      {rewardStatus && <p>{rewardStatus}</p>}
+    </div>
+  );
+}
+
+export default App;
