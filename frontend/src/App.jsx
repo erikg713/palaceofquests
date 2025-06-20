@@ -1,5 +1,32 @@
 import React, { useState, useCallback, memo } from 'react';
 import './App.css';
+// src/App.jsx
+import { useState, useEffect } from 'react';
+import QuestLog from './components/QuestLog';
+import { authenticateWithPi } from './auth/piAuth';
+
+export default function App() {
+  const [user, setUser] = useState(null);
+
+  const login = async () => {
+    const auth = await authenticateWithPi();
+    setUser(auth.user);
+  };
+
+  return (
+    <div className="App">
+      <h1>Palace of Quests</h1>
+      {user ? (
+        <>
+          <p>Welcome, {user.username}!</p>
+          <QuestLog uid={user.uid} />
+        </>
+      ) : (
+        <button onClick={login}>Login with Pi Wallet</button>
+      )}
+    </div>
+  );
+}
 
 // Custom hook for Pi authentication and payment
 function usePiAuth() {
