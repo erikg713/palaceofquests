@@ -93,5 +93,26 @@ const App = memo(() => {
     </main>
   );
 });
+const loginWithPi = async () => {
+  try {
+    const scopes = ['username', 'payments'];
+    const auth = await window.Pi.authenticate(scopes, (payment) => {
+      console.log('Found incomplete payment:', payment);
+    });
 
+    const { user, accessToken } = auth;
+    setUser(user);
+
+    // Send token to backend for verification + session setup
+    await fetch('http://localhost:5000/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken })
+    });
+
+    console.log('User verified with backend:', user.username);
+  } catch (err) {
+    console.error('Login error:', err);
+  }
+};
 export default App;
