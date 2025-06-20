@@ -1,1 +1,6 @@
-
+{
+  "name": "Palace of Quests",
+  "description": "A Web3 Metaverse quest game on Pi Network.",
+  "permissions": ["username", "payments"],
+  "sdk_version": "2.0"
+}
