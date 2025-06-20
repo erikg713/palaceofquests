@@ -4,53 +4,60 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Palace of Quests - Login using Pi Network for an immersive experience.">
-  <meta name="author" content="Your Name or Team">
+  <meta name="author" content="Palace of Quests Team">
+  <meta name="keywords" content="Palace of Quests, Pi Network, Login, immersive experience">
   <title>Palace of Quests</title>
+  <link rel="stylesheet" href="/styles/main.css">
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-  Pi.init({ version: "2.0", sandbox: true }); // use sandbox:false for mainnet
-</script>
-  <style>
-    :root {
-      --primary-color: #865DFF;
-      --secondary-color: #222;
-      --error-color: #b00020;
-      --font-family: system-ui, sans-serif;
-    }
-    body { font-family: var(--font-family); background: #fafafa; margin: 40px; }
-    #pi-login-btn { padding: 0.6em 1.2em; font-size: 1rem; border-radius: 5px; border: none; background: var(--primary-color); color: #fff; cursor: pointer; transition: background 0.3s; }
-    #pi-login-btn:hover { background: #6b48c8; }
-    #pi-login-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
-    #login-status { margin-top: 16px; color: var(--secondary-color); font-weight: 500; min-height: 24px; transition: color 0.2s; }
-    #login-status.error { color: var(--error-color); }
-    #spinner { display: none; margin-top: 16px; }
-  </style>
 </head>
 <body>
-  <button id="pi-login-btn" aria-label="Login with Pi Network">Login with Pi Network</button>
-  <div id="login-status"></div>
-  <div id="spinner">Loading...</div>
-
+  <header>
+    <h1>Welcome to Palace of Quests</h1>
+  </header>
+  <main>
+    <button id="pi-login-btn" aria-label="Login with Pi Network">Login with Pi Network</button>
+    <div id="login-status" role="status" aria-live="polite"></div>
+    <div id="spinner" title="Loading...">Loading...</div>
+  </main>
   <script>
-    const PI_CLIENT_ID = "YOUR_CLIENT_ID"; // Replace with dynamic value
-    const PI_NETWORK = "testnet"; // Use environment variable for production
+    const PI_CLIENT_ID = process.env.PI_CLIENT_ID || "YOUR_CLIENT_ID"; // Secure dynamic injection
+    const PI_NETWORK = process.env.PI_NETWORK || "testnet";
 
     const loginBtn = document.getElementById("pi-login-btn");
     const statusMsg = document.getElementById("login-status");
     const spinner = document.getElementById("spinner");
 
-    async function loginWithPi() {
+    const setStatus = (message, isError = false) => {
+      statusMsg.textContent = message;
+      statusMsg.className = isError ? "error" : "";
+      spinner.style.display = isError ? "none" : "block";
+    };
+
+    const sendLoginToBackend = async (accessToken) => {
+      try {
+        const res = await fetch("/api/pi-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ access_token: accessToken }),
+        });
+        if (!res.ok) throw new Error(`Backend rejected login: ${await res.text()}`);
+        const data = await res.json();
+        setStatus(`Welcome, ${data.username}!`);
+      } catch (err) {
+        setStatus(`Network error: ${err.message}`, true);
+      }
+    };
+
+    const loginWithPi = async () => {
       setStatus("Connecting to Pi Network…", false);
       loginBtn.disabled = true;
       spinner.style.display = "block";
-
       try {
         const { account } = await Pi.initializer({ clientId: PI_CLIENT_ID, network: PI_NETWORK });
         const authResponse = await account.requestAuth({
           app: { name: "Palace of Quests" },
           permissions: ["testnet_access"],
         });
-
         if (authResponse.status === "success" && authResponse.account) {
           setStatus(`Logged in as: ${authResponse.account.username}`);
           await sendLoginToBackend(authResponse.accessToken);
@@ -63,33 +70,12 @@
         loginBtn.disabled = false;
         spinner.style.display = "none";
       }
-    }
+    };
 
-    async function sendLoginToBackend(accessToken) {
-      try {
-        const res = await fetch("/api/pi-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ access_token: accessToken }),
-        });
-
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error("Backend rejected login: " + err);
-        }
-
-        const data = await res.json();
-        setStatus(`Welcome, ${data.username}!`);
-      } catch (err) {
-        setStatus("Network error: " + err.message, true);
-      }
-    }
-
-    function setStatus(message, isError = false) {
-      statusMsg.textContent = message;
-      statusMsg.className = isError ? "error" : "";
-      spinner.style.display = isError ? "none" : "block";
-    }
+    loginBtn.addEventListener("click", loginWithPi);
+  </script>
+</body>
+</html>
 
     loginBtn.addEventListener("click", loginWithPi);
   </script>
