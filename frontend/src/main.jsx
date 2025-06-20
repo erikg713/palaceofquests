@@ -4,34 +4,51 @@ import { PiWalletProvider } from './context/PiWalletContext.jsx';
 import { mockPiSDK } from './utils/mockPi.js';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
-/**
- * Initialize the Pi Network SDK for wallet and authentication features.
- * Only mock the SDK during development for safety and testing.
- */
-if (import.meta.env.MODE === 'development') {
-  mockPiSDK();
-} else if (!window.Pi) {
-  console.error('Pi Network SDK not found. Ensure it is loaded for production builds.');
-}
+// Utility for environment checks
+const isDevelopment = import.meta.env.MODE === 'development';
 
-// Optional: Log Pi user session for debugging in development
-if (import.meta.env.MODE === 'development' && window.Pi) {
-  window.Pi.authenticate(['username', 'wallet_address'])
-    .then(({ user }) => {
-      console.info('[DEV] Pi User:', user);
-    })
-    .catch((err) => {
-      console.warn('[DEV] Pi Auth Error:', err);
-    });
-}
+// Initialize the Pi Network SDK
+const initializePiSDK = () => {
+  if (isDevelopment) {
+    mockPiSDK();
+  } else if (!window.Pi) {
+    console.error('Pi Network SDK not found. Ensure it is loaded for production builds.');
+  }
+};
 
+// Authenticate Pi user session in development
+const authenticatePiUser = () => {
+  if (isDevelopment && window.Pi) {
+    window.Pi.authenticate(['username', 'wallet_address'])
+      .then(({ user }) => {
+        console.info('[DEV] Pi User:', user);
+      })
+      .catch((err) => {
+        console.warn('[DEV] Pi Auth Error:', err);
+      });
+  }
+};
+
+// Initialization logic
+initializePiSDK();
+authenticatePiUser();
+
+// Lazy load the App component
 const App = lazy(() => import('./App.jsx'));
 
+// Customized fallback component for lazy loading
+const LoadingFallback = () => (
+  <div style={{ textAlign: 'center', padding: '20px' }}>
+    <p>Loading Pi Platform...</p>
+  </div>
+);
+
+// Render the React application
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
       <PiWalletProvider>
-        <Suspense fallback={<div>Loading Pi Platform...</div>}>
+        <Suspense fallback={<LoadingFallback />}>
           <App />
         </Suspense>
       </PiWalletProvider>
