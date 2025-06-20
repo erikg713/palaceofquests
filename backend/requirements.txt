@@ -3,4 +3,4 @@ uvicorn
 requests
 httpx
 python-dotenv
-supabase
+npm install @supabase/supabase-js
