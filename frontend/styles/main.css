@@ -1,1 +1,100 @@
+/* Global container styles for immersive layout */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
+  background-color: #0a0a1a;
+  color: #ffffff;
+}
 
+/* Main app layout */
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(ellipse at center, #0a0a1a 0%, #000000 100%);
+  overflow: hidden;
+}
+
+/* Canvas container for WebGL/Three.js/Babylon.js */
+#metaverse-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* UI Layer on top of canvas */
+#ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#ui-layer .hud,
+#ui-layer .controls {
+  pointer-events: auto;
+  position: absolute;
+  padding: 1rem;
+  z-index: 10;
+}
+
+.hud {
+  top: 1rem;
+  left: 1rem;
+  background: rgba(20, 20, 40, 0.7);
+  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.controls {
+  bottom: 1rem;
+  right: 1rem;
+  background: rgba(30, 30, 50, 0.8);
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+/* Button style override for fullscreen or VR interactions */
+.fullscreen-button {
+  background-color: #4b0082;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.fullscreen-button:hover {
+  background-color: #6a0dad;
+}
+
+/* Loading screen */
+#loading-screen {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #aaa;
+  font-family: monospace;
+}
