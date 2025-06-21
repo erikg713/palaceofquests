@@ -98,3 +98,30 @@
   background: #333;
   border-color: #6a0dad;
 }
+
+.player-hud-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1rem;
+  background: radial-gradient(circle, #1c1c2b, #0d0d1f);
+  border: 2px solid #4e4e70;
+  border-radius: 16px;
+  box-shadow: 0 0 20px #000;
+  color: #eee;
+}
+
+.equipment-section, .stats-section, .hotbar-section {
+  flex: 1;
+  padding: 1rem;
+  border-right: 1px solid #444;
+}
+.hotbar-section {
+  border-right: none;
+}
+
+.stat-row {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #c0c0ff;
+}
