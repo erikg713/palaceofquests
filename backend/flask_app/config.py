@@ -12,11 +12,7 @@ class Config:
     SUPABASE_URL = os.environ.get('SUPABASE_URL')
     SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
     SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY')
-    
-    # Example: SQLAlchemy config if you use it alongside Supabase
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR}/app.db")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+        
     # Security settings
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
