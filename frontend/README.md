@@ -24,6 +24,7 @@ cd palace-of-quests
 
 # Install dependencies
 npm install
+npm install react-dnd react-dnd-html5-backend
 
 # Start the development server
 npm run dev
