@@ -1,13 +1,41 @@
 {
-  "name": "pi-sdk-server",
+  "name": "palaceofquests-backend",
   "version": "1.0.0",
+  "description": "Backend service for Palace of Quests - a platform for gamified adventure and quest experiences.",
+  "author": "Erik G. <contact@palaceofquests.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erikg713/palaceofquests"
+  },
+  "keywords": [
+    "palaceofquests",
+    "backend",
+    "express",
+    "game",
+    "quests",
+    "adventure"
+  ],
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint": "eslint . --ext .js",
+    "test": "jest",
+    "check:deps": "npm outdated",
+    "prepare": "npm run lint && npm run test"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "pi-backend": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.36.0",
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
