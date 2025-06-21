@@ -1,7 +1,11 @@
 from flask import Flask
 from app.routes.pi_routes import pi_bp
 import logging
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from .config import Config
 
+db = Supabase()
 def create_app() -> Flask:
     """
     Factory function to create and configure the Flask application.
@@ -28,26 +32,4 @@ def create_app() -> Flask:
         raise
     
     # Return the app instance
-    return app
-
-
-from flask import Flask
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from .config import Config
-
-db = SQLAlchemy()
-
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-
-    CORS(app)
-    db.init_app(app)
-
-    from .routes.auth import auth_bp
-    from .routes.quests import quests_bp
-    app.register_blueprint(auth_bp, url_prefix="/api/auth")
-    app.register_blueprint(quests_bp, url_prefix="/api/quests")
-
     return app
