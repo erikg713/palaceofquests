@@ -12,7 +12,7 @@ if __name__ == "__main__":
     logging.info("Initializing Flask application...")
 
     # Read configuration from environment variables
-    debug_mode = os.getenv("FLASK_DEBUG", "False").lower() in ("true", "1", "yes")
+    debug_mode = os.getenv("FLASK_DEBUG", "True").lower() in ("true", "1", "yes")
     host = os.getenv("FLASK_HOST", "127.0.0.1")
     port = int(os.getenv("FLASK_PORT", 5000))
 
