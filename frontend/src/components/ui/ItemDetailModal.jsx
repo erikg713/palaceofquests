@@ -19,3 +19,21 @@ export default function ItemDetailModal({ item, onClose }) {
     </div>
   )
 }
+const inventory = [
+  {
+    name: 'Mystic Sword',
+    qty: 1,
+    type: 'Weapon',
+    rarity: 'Epic',
+    description: 'A sword imbued with ancient energy.',
+    sellValue: 12.5
+  },
+  {
+    name: 'Potion',
+    qty: 3,
+    type: 'Consumable',
+    rarity: 'Common',
+    description: 'Restores 50 health.',
+    sellValue: 1
+  }
+]
