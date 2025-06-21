@@ -1,1 +1,148 @@
-e
+/* UI.css — Professional UI foundation for Palace of Quests */
+
+/* Root variables: easy theming & maintainability */
+:root {
+  --color-primary: #2b4162;
+  --color-secondary: #385f71;
+  --color-accent: #f6ae2d;
+  --color-bg: #f0f3f7;
+  --color-surface: #fff;
+  --color-text: #20232a;
+  --color-muted: #6c757d;
+
+  --font-main: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --font-size-base: 16px;
+  --border-radius: 8px;
+  --shadow-small: 0 1px 4px rgba(44,62,80,0.07);
+  --shadow-medium: 0 4px 12px rgba(44,62,80,0.12);
+  --transition: 0.18s cubic-bezier(.4,0,.2,1);
+}
+
+/* Universal resets and box sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base body styles */
+body {
+  font-family: var(--font-main);
+  font-size: var(--font-size-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.6em;
+  line-height: 1.2;
+}
+
+/* Buttons */
+.button,
+button {
+  display: inline-block;
+  padding: 0.6em 1.4em;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--color-surface);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-small);
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+
+.button:hover,
+button:hover,
+.button:focus,
+button:focus {
+  background: var(--color-secondary);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Card Component */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-small);
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  transition: box-shadow var(--transition);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-medium);
+}
+
+/* Utility: Flexbox helpers */
+.flex {
+  display: flex;
+  gap: 1rem;
+}
+
+.flex-center {
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+/* Utility: Spacing */
+.mt-1 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mt-2 { margin-top: 2rem; }
+.mb-2 { margin-bottom: 2rem; }
+.p-1 { padding: 1rem; }
+.p-2 { padding: 2rem; }
+
+/* Utility: Text */
+.text-center { text-align: center; }
+.text-muted { color: var(--color-muted); }
+
+/* Links */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+a:hover, a:focus {
+  color: var(--color-secondary);
+  text-decoration: underline;
+}
+
+/* Inputs & Forms */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 1em;
+  border: 1px solid #d1d5db;
+  border-radius: var(--border-radius);
+  padding: 0.55em 1em;
+  background: var(--color-surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(246,174,45,0.18);
+  outline: none;
+}
+
+/* Responsive - Mobile first */
+@media (max-width: 600px) {
+  .card { padding: 1rem; }
+  .flex { gap: 0.5rem; }
+  h1 { font-size: 1.7rem; }
+  h2 { font-size: 1.3rem; }
+}
