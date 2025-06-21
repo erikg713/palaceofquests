@@ -55,3 +55,19 @@
 .modal-actions .close-button {
   background: #222;
 }
+
+.rarity-common { color: #ccc; }
+.rarity-rare { color: #1e90ff; }
+.rarity-epic { color: #c678dd; }
+.rarity-legendary { color: #ffd700; }
+
+.item-card {
+  border: 2px solid transparent;
+  background: radial-gradient(circle, #111, #222);
+  box-shadow: 0 0 8px rgba(255,255,255,0.1);
+  transition: transform 0.2s ease;
+}
+.item-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255,255,255,0.3);
+}
