@@ -1,0 +1,49 @@
+.hud-panel,
+.quest-tracker,
+.inventory-panel,
+.wallet-status {
+  position: absolute;
+  background: rgba(18, 18, 30, 0.85);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.hud-panel {
+  top: 1rem;
+  left: 1rem;
+}
+
+.quest-tracker {
+  top: 1rem;
+  right: 1rem;
+  max-width: 240px;
+}
+
+.inventory-panel {
+  bottom: 1rem;
+  left: 1rem;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.wallet-status {
+  bottom: 1rem;
+  right: 1rem;
+}
+
+.wallet-button {
+  background-color: #4b0082;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.quest-progress {
+  color: #00ffcc;
+  font-weight: bold;
+}
