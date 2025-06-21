@@ -1,39 +1,79 @@
-import React from 'react'
-import './styles/ui.css'
+import React, { useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
+import './styles/ui.css';
 
-export default function ItemDetailModal({ item, onClose }) {
+const ItemDetailModal = ({ item, onClose }) => {
+  // Ensure modal closes on Escape key
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  if (!item) return null;
+
+  const handleUse = () => {
+    // Placeholder: replace with logic as needed
+    window.alert(`Used ${item.name}`);
+  };
+
+  const handleSell = () => {
+    // Placeholder: replace with logic as needed
+    window.alert(`Sell ${item.name} for ${item.sellValue ?? 0} Pi`);
+  };
+
   return (
-    <div className="modal-backdrop">
-      <div className="modal-content">
-        <h3>{item.name}</h3>
-        <p><strong>Type:</strong> {item.type || 'Unknown'}</p>
-        <p><strong>Rarity:</strong> {item.rarity || 'Common'}</p>
-        <p><strong>Description:</strong> {item.description || 'No description.'}</p>
-
+    <div className="modal-backdrop" role="presentation" tabIndex={-1}>
+      <div
+        className="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="item-modal-title"
+        aria-describedby="item-modal-desc"
+      >
+        <h3 id="item-modal-title">{item.name}</h3>
+        <p>
+          <strong>Type:</strong> {item.type || 'Unknown'}
+        </p>
+        <p>
+          <strong>Rarity:</strong> {item.rarity || 'Common'}
+        </p>
+        <p id="item-modal-desc">
+          <strong>Description:</strong> {item.description || 'No description.'}
+        </p>
         <div className="modal-actions">
-          <button onClick={() => alert(`Used ${item.name}`)}>Use</button>
-          <button onClick={() => alert(`Sell ${item.name} for ${item.sellValue || 0} Pi`)}>Sell</button>
-          <button onClick={onClose} className="close-button">Close</button>
+          <button type="button" onClick={handleUse}>
+            Use
+          </button>
+          <button type="button" onClick={handleSell}>
+            Sell
+          </button>
+          <button type="button" onClick={onClose} className="close-button">
+            Close
+          </button>
         </div>
       </div>
     </div>
-  )
-}
-const inventory = [
-  {
-    name: 'Mystic Sword',
-    qty: 1,
-    type: 'Weapon',
-    rarity: 'Epic',
-    description: 'A sword imbued with ancient energy.',
-    sellValue: 12.5
-  },
-  {
-    name: 'Potion',
-    qty: 3,
-    type: 'Consumable',
-    rarity: 'Common',
-    description: 'Restores 50 health.',
-    sellValue: 1
-  }
-]
+  );
+};
+
+ItemDetailModal.propTypes = {
+  item: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    type: PropTypes.string,
+    rarity: PropTypes.string,
+    description: PropTypes.string,
+    sellValue: PropTypes.number,
+  }),
+  onClose: PropTypes.func.isRequired,
+};
+
+export default React.memo(ItemDetailModal);
