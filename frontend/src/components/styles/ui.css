@@ -125,3 +125,17 @@
   font-size: 0.9rem;
   color: #c0c0ff;
 }
+
+.vendor-modal {
+  width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #1c1c2b;
+  border-radius: 12px;
+  padding: 1rem;
+}
+.marketplace-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
