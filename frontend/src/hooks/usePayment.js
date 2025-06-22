@@ -40,3 +40,21 @@ const usePayment = (uid) => {
 };
 
 export default usePayment;
+
+export function usePiPayment() {
+  return async (item) => {
+    window.Pi.createPayment({
+      amount: item.price,
+      memo: `Buy in 3D: ${item.items.name}`,
+      metadata: { marketItemId: item.id },
+      onReadyForServerApproval: async (pid) => {
+        await fetch('/payment/submit', { method: 'POST', body: JSON.stringify({ paymentId: pid }) });
+      },
+      onReadyForServerCompletion: async (pid, txid) => {
+        await fetch('/payment/complete', { method: 'POST', body: JSON.stringify({ paymentId: pid, txid }) });
+        alert(`Purchased ${item.items.name} in-world!`);
+      },
+      onError: console.error,
+    });
+  }
+}
