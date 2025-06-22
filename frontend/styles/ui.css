@@ -47,3 +47,43 @@
   color: #00ffcc;
   font-weight: bold;
 }
+
+.shop-modal {
+  max-width: 640px;
+  background: #1c1c2b;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #000;
+  color: #fff;
+}
+
+.shop-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.shop-item {
+  background: #282844;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  width: 120px;
+}
+
+.shop-item img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.shop-item button {
+  margin-top: 0.5rem;
+  background: #6a0dad;
+  color: #fff;
+  padding: 0.4rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
