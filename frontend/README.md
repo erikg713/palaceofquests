@@ -23,7 +23,7 @@ git clone https://github.com/YOUR_NAME/palace-of-quests.git
 cd palace-of-quests
 
 # Install dependencies
-npm install
+npm install react-unity-webgl
 npm install react-dnd react-dnd-html5-backend
 npm install three drei @react-three/fiber
 npm install three @react-three/fiber @react-three/drei
