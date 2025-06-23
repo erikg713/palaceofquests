@@ -8,6 +8,10 @@
     "type": "git",
     "url": "https://github.com/erikg713/palaceofquests"
   },
+  "bugs": {
+    "url": "https://github.com/erikg713/palaceofquests/issues"
+  },
+  "homepage": "https://github.com/erikg713/palaceofquests#readme",
   "keywords": [
     "palaceofquests",
     "backend",
@@ -21,9 +25,12 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "lint": "eslint . --ext .js",
+    "format": "prettier --write .",
     "test": "jest",
     "check:deps": "npm outdated",
-    "prepare": "npm run lint && npm run test"
+    "prepare": "npm run lint && npm run test",
+    "build": "tsc",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
@@ -33,9 +40,17 @@
   "devDependencies": {
     "eslint": "^8.36.0",
     "jest": "^29.0.0",
-    "nodemon": "^3.0.0"
+    "nodemon": "^3.0.0",
+    "prettier": "^2.8.8",
+    "husky": "^8.0.0",
+    "cross-env": "^7.0.3"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run test"
+    }
   }
 }
