@@ -1,0 +1,1 @@
+https://cdn.openai.com/images/fantasy-realm-hub.jpg
