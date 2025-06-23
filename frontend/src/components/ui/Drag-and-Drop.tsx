@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, useMemo } from "react";
 
 interface DragAndDropProps<T> {
   items: T[];
@@ -17,38 +17,60 @@ function DragAndDrop<T>({
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const draggingRef = useRef<number | null>(null);
 
-  const handleDragStart = (idx: number) => {
+  // Handlers
+  const handleDragStart = useCallback((idx: number) => {
     setDraggedIdx(idx);
     draggingRef.current = idx;
-  };
+  }, []);
 
-  const handleDragOver = (idx: number, e: React.DragEvent) => {
+  const handleDragOver = useCallback((idx: number, e: React.DragEvent) => {
     e.preventDefault();
     setHoveredIdx(idx);
-  };
+  }, []);
 
-  const handleDrop = (idx: number) => {
-    if (
-      draggedIdx !== null &&
-      draggedIdx !== idx &&
-      draggedIdx >= 0 &&
-      idx >= 0
-    ) {
-      const updated = [...items];
-      const [removed] = updated.splice(draggedIdx, 1);
-      updated.splice(idx, 0, removed);
-      onChange(updated);
-    }
+  const handleDrop = useCallback(
+    (idx: number) => {
+      if (
+        draggedIdx !== null &&
+        draggedIdx !== idx &&
+        draggedIdx >= 0 &&
+        idx >= 0
+      ) {
+        const updated = [...items];
+        const [removed] = updated.splice(draggedIdx, 1);
+        updated.splice(idx, 0, removed);
+        onChange(updated);
+      }
+      setHoveredIdx(null);
+      setDraggedIdx(null);
+      draggingRef.current = null;
+    },
+    [draggedIdx, items, onChange]
+  );
+
+  const handleDragEnd = useCallback(() => {
     setHoveredIdx(null);
     setDraggedIdx(null);
     draggingRef.current = null;
-  };
+  }, []);
 
-  const handleDragEnd = () => {
-    setHoveredIdx(null);
-    setDraggedIdx(null);
-    draggingRef.current = null;
-  };
+  // Styles
+  const getItemStyle = useMemo(
+    () => (idx: number) => ({
+      opacity: draggedIdx === idx ? 0.5 : 1,
+      border:
+        hoveredIdx === idx && draggedIdx !== null
+          ? "2px dashed #0070f3"
+          : "1px solid transparent",
+      borderRadius: 6,
+      marginBottom: 8,
+      background: "#fff",
+      cursor: "grab",
+      transition: "border 0.2s, opacity 0.2s",
+      userSelect: "none",
+    }),
+    [draggedIdx, hoveredIdx]
+  );
 
   return (
     <div className={className}>
@@ -60,19 +82,9 @@ function DragAndDrop<T>({
           onDragOver={(e) => handleDragOver(idx, e)}
           onDrop={() => handleDrop(idx)}
           onDragEnd={handleDragEnd}
-          style={{
-            opacity: draggedIdx === idx ? 0.5 : 1,
-            border:
-              hoveredIdx === idx && draggedIdx !== null
-                ? "2px dashed #0070f3"
-                : "1px solid transparent",
-            borderRadius: 6,
-            marginBottom: 8,
-            background: "#fff",
-            cursor: "grab",
-            transition: "border 0.2s, opacity 0.2s",
-            userSelect: "none",
-          }}
+          style={getItemStyle(idx)}
+          aria-grabbed={draggedIdx === idx}
+          aria-dropeffect="move"
         >
           {renderItem(item, draggedIdx === idx)}
         </div>
