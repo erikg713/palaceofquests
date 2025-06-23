@@ -55,3 +55,4 @@ const App = () => (
 );
 <Route path="/npcs" element={<NPCPage />} />
 export default App;
+<Route path="/hud" element={<GameOverlay><p>Welcome to the arena.</p></GameOverlay>} />
