@@ -14,3 +14,13 @@ const App = () => ( <Router> <Routes> <Route path="/" element={<WorldHub />} /> 
 
 export default App;
 
+// src/pages/WorldHub.jsx import React from 'react'; import { useNavigate } from 'react-router-dom';
+
+const WorldHub = () => { const navigate = useNavigate();
+
+const teleport = (zone) => { alert(Launching from Space Elevator to ${zone}...); // navigate(/realm/${zone}); };
+
+return ( <div className="relative bg-cover bg-center min-h-screen" style={{ backgroundImage: 'url(https://cdn.openai.com/images/fantasy-realm-hub.jpg)', }} > <div className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center text-white text-center"> <h1 className="text-4xl font-extrabold mb-4 text-cyan-300">Launch Platform: Pi Defense Protocol</h1> <p className="max-w-xl mb-6 text-lg text-gray-200">Can you and your allies defend the magical realms and Earth from an alien AI swarm? Board the space elevator and prepare to fight among the stars.</p> <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> <button onClick={() => teleport('Moon Fortress')} className="bg-cyan-600 hover:bg-cyan-700 px-6 py-3 rounded-xl text-lg shadow-xl">Launch to Moon Fortress</button> <button onClick={() => teleport('Plasma Citadel')} className="bg-fuchsia-600 hover:bg-fuchsia-700 px-6 py-3 rounded-xl text-lg shadow-xl">Launch to Plasma Citadel</button> <button onClick={() => teleport('Hive Nexus')} className="bg-red-700 hover:bg-red-800 px-6 py-3 rounded-xl text-lg shadow-xl">Engage Hive Nexus</button> </div> </div> </div> ); };
+
+export default WorldHub;
+
