@@ -24,3 +24,9 @@ return ( <div className="relative bg-cover bg-center min-h-screen" style={{ back
 
 export default WorldHub;
 
+const isUnlocked = userUnlocks.includes(realm.id);
+{isUnlocked ? (
+  <button onClick={() => teleport(realm.id)}>Enter</button>
+) : (
+  <PiPaymentButton ... />
+)}
