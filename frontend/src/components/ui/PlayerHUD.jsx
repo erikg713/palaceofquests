@@ -1,6 +1,46 @@
 import EquipmentPanel from './EquipmentPanel';
 import Hotbar from './Hotbar';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
+export default function PlayerHUD({ userId }) {
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) console.error('Profile error:', error);
+      else setProfile(data);
+    };
+
+    fetchProfile();
+  }, [userId]);
+
+  if (!profile) return null;
+
+  const xpPercent = (profile.xp / 100) * 100;
+
+  return (
+    <div className="fixed top-4 left-4 bg-gray-900 p-4 rounded-xl border border-purple-700 shadow-lg w-64 z-50 text-white">
+      <h2 className="text-lg font-bold">{profile.username}</h2>
+      <p className="text-sm text-gray-300">Level {profile.level}</p>
+
+      <div className="mt-2 h-4 w-full bg-gray-700 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-purple-500 transition-all"
+          style={{ width: `${xpPercent}%` }}
+        ></div>
+      </div>
+      <p className="text-xs text-gray-400 mt-1">{profile.xp}/100 XP</p>
+    </div>
+  );
+}
 export default function PlayerHUD({ userId, inventory }) {
   return (
     <div className="player-hud-container">
