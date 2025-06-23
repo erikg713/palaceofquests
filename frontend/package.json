@@ -4,7 +4,7 @@
   "private": true,
   "description": "Palace of Quests | Pi Network dApp frontend",
   "author": "Erik G.",
-  "license": "See License,
+  "license": "PIOS",
   "main": "src/index.tsx",
   "scripts": {
     "dev": "vite",
