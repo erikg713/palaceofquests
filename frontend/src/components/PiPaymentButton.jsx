@@ -1,4 +1,18 @@
 // src/components/PiPaymentButton.jsx import React from 'react';
+import { useUserInventory } from '../hooks/useUserInventory';
+
+const { addItem } = useUserInventory(userId); // userId must come from Supabase Auth
+
+<PiPaymentButton
+  amount={1}
+  memo={`Buy ${item.name}`}
+  metadata={{ itemId: item.id, type: 'purchase' }}
+  onPaymentComplete={() => {
+    alert(`${item.name} purchased with Pi!`);
+    onEquip(item);
+    addItem({ id: item.id, name: item.name, rarity: item.rarity, icon: item.icon });
+  }}
+/>
 
 const PiPaymentButton = ({ amount = 1, memo = "Launch Mission", metadata = {}, onPaymentComplete }) => { const handlePay = async () => { if (!window?.Pi) { alert('Pi SDK not available. Please open this app in the Pi Browser.'); return; }
 
