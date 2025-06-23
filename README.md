@@ -1,5 +1,5 @@
----
- Palace of Quests
+------
+### Palace of Quests ###
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Pi%20Network-blueviolet)
