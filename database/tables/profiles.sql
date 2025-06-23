@@ -4,3 +4,12 @@ CREATE TABLE profiles (
   level INTEGER DEFAULT 1,
   xp INTEGER DEFAULT 0
 );
+
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username TEXT UNIQUE,
+  level INTEGER DEFAULT 1,
+  xp INTEGER DEFAULT 0,
+  pi_spent NUMERIC DEFAULT 0,
+  created_at TIMESTAMP DEFAULT now()
+);
