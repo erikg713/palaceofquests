@@ -52,5 +52,5 @@ const App = () => (
     </Routes>
   </Router>
 );
-
+<Route path="/npcs" element={<NPCPage />} />
 export default App;
