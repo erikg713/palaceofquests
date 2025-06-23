@@ -1,11 +1,22 @@
+# --- Core API Framework and Server ---
 fastapi==0.95.2
 uvicorn==0.22.0
-requests==2.32.4
-httpx==0.24.0
+
+# --- HTTP Clients ---
+httpx==0.24.0  # Modern async HTTP client, preferred with FastAPI
+# requests==2.32.4  # Uncomment ONLY if you use requests in your codebase
+
+# --- Environment Variables ---
 python-dotenv==1.0.0
+
+# --- Database & Supabase Client ---
 supabase==0.2.0
-urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
-websockets>=10.0 # not directly required, pinned by Snyk to avoid a vulnerability
-Flask
-Flask-CORS
-Flask-SQLAlchemy
+
+# --- Security Vulnerability Patches (Pinned by Snyk) ---
+urllib3==2.5.0      # Direct pin for security
+websockets==10.0.0  # Direct pin for security
+
+# --- Flask Stack (Remove if not using Flask anywhere) ---
+Flask==2.2.5
+Flask-CORS==3.0.10
+Flask-SQLAlchemy==3.0.7
