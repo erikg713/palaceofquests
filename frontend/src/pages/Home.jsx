@@ -51,3 +51,21 @@ export default function Home() {
     </div>
   );
 }
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import InventoryPage from './pages/InventoryPage';
+import WorldHub from './pages/WorldHub';
+import LanguageToggle from './components/LanguageToggle';
+
+const App = () => (
+  <Router>
+    <LanguageToggle />
+    <Routes>
+      <Route path="/" element={<WorldHub />} />
+      <Route path="/inventory" element={<InventoryPage />} />
+    </Routes>
+  </Router>
+);
+
+export default App;
