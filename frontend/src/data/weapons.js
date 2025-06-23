@@ -1,15 +1,19 @@
-/**
- * Weapon data module
- * Each weapon object contains:
- * - id: Unique identifier
- * - name: Display name
- * - type: Weapon category
- * - damage: Base damage value
- * - weight: Affects character agility (lower is better)
- * - rarity: How hard it is to obtain
- * - description: Short flavor text
- */
+// Weapon data definitions and utilities
 
+/**
+ * Weapon rarity levels (enum-like for consistency)
+ */
+export const RARITY = Object.freeze({
+  COMMON: 'common',
+  UNCOMMON: 'uncommon',
+  RARE: 'rare',
+  EPIC: 'epic',
+  LEGENDARY: 'legendary',
+});
+
+/**
+ * Master weapon list.
+ */
 const weapons = [
   {
     id: 'swd001',
@@ -17,7 +21,7 @@ const weapons = [
     type: 'sword',
     damage: 12,
     weight: 5,
-    rarity: 'common',
+    rarity: RARITY.COMMON,
     description: 'Reliable and sturdy, favored by novice adventurers.',
   },
   {
@@ -26,7 +30,7 @@ const weapons = [
     type: 'axe',
     damage: 18,
     weight: 8,
-    rarity: 'uncommon',
+    rarity: RARITY.UNCOMMON,
     description: 'Heavy, but devastating in the right hands.',
   },
   {
@@ -35,7 +39,7 @@ const weapons = [
     type: 'bow',
     damage: 10,
     weight: 3,
-    rarity: 'common',
+    rarity: RARITY.COMMON,
     description: 'Enables ranged attacks with precision.',
   },
   {
@@ -44,13 +48,53 @@ const weapons = [
     type: 'dagger',
     damage: 8,
     weight: 1,
-    rarity: 'rare',
+    rarity: RARITY.RARE,
     description: 'Light and quick, perfect for stealth attacks.',
   },
-  // Add more weapons as needed
+  // Extend as needed
 ];
 
-// Utility to fetch weapon by ID (for maintainability and optimization)
-export const getWeaponById = (id) => weapons.find((w) => w.id === id) || null;
+/**
+ * Fast lookup map for weapons by ID
+ */
+const weaponMap = weapons.reduce((map, weapon) => {
+  map[weapon.id] = weapon;
+  return map;
+}, {});
+
+/**
+ * Get a weapon by its unique ID
+ * @param {string} id
+ * @returns {object|null}
+ */
+export function getWeaponById(id) {
+  return weaponMap[id] || null;
+}
+
+/**
+ * Get all weapons of a specific type
+ * @param {string} type
+ * @returns {object[]}
+ */
+export function getWeaponsByType(type) {
+  return weapons.filter(w => w.type === type);
+}
+
+/**
+ * Get all weapons by rarity
+ * @param {string} rarity
+ * @returns {object[]}
+ */
+export function getWeaponsByRarity(rarity) {
+  return weapons.filter(w => w.rarity === rarity);
+}
+
+/**
+ * Get all weapons
+ * @returns {object[]}
+ */
+export function getAllWeapons() {
+  return weapons.slice();
+}
 
 export default weapons;
