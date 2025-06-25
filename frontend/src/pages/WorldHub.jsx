@@ -1,4 +1,13 @@
-// src/pages/WorldHub.jsx import React from 'react'; import { useNavigate } from 'react-router-dom';
+// src/pages/WorldHub.jsx 
+import React from 'react'
+import { useNavigate } from 'react-router-dom';
+import PiUnlockButton from './PiUnlockButton';
+
+{!isUnlocked ? (
+  <PiUnlockButton userId={piUser.uid} realm={realm} />
+) : (
+  <button onClick={() => teleport(realm.id)}>Enter Realm</button>
+)}
 
 const WorldHub = () => { const navigate = useNavigate();
 
