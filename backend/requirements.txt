@@ -18,5 +18,5 @@ websockets==10.0.0  # Direct pin for security
 
 # --- Flask Stack (Remove if not using Flask anywhere) ---
 Flask==2.2.5
-Flask-CORS==3.0.10
+Flask-CORS==6.0.0
 Flask-SQLAlchemy==3.0.7
