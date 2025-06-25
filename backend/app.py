@@ -4,7 +4,37 @@ from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 from dotenv import load_dotenv
 import requests
+from flask import request, jsonify
+import requests, uuid, os
 
+@app.route('/payment/create', methods=['POST'])
+def create_payment():
+    uid = request.json.get('uid')
+    amount = request.json.get('amount')
+    memo = request.json.get('memo')
+    metadata = request.json.get('metadata', {})
+
+    if not all([uid, amount, memo]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    payment_id = str(uuid.uuid4())
+
+    payload = {
+        "amount": str(amount),
+        "memo": memo,
+        "metadata": metadata,
+        "uid": uid,
+        "payment_id": payment_id
+    }
+
+    headers = {
+        "Authorization": f"Key {os.getenv('PI_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+
+    res = requests.post("https://api.minepi.com/v2/payments", headers=headers, json=payload)
+
+    return jsonify(res.json())
 # --- Config & Setup ---
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
