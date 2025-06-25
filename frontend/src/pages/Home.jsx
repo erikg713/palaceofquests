@@ -1,7 +1,50 @@
 import React, { useContext } from 'react';
 import { PiWalletContext } from '../context/PiWalletContext';
 import './Home.css';
+import PiPaymentModal from '../components/PiPaymentModal';
+import { useState } from 'react';
 
+export default function WorldHub() {
+  const [showPayModal, setShowPayModal] = useState(false);
+
+  const realm = {
+    id: 'moon_fortress',
+    name: 'Moon Fortress',
+    unlockCost: 2
+  };
+
+  const handleUnlockRealm = async () => {
+    await fetch(`${import.meta.env.VITE_API_BASE_URL}/unlock-realm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: piUser.uid, realm_id: realm.id })
+    });
+    alert(`${realm.name} unlocked!`);
+  };
+
+  return (
+    <>
+      <button
+        className="bg-purple-600 text-white px-4 py-2 rounded"
+        onClick={() => setShowPayModal(true)}
+      >
+        Unlock {realm.name} for {realm.unlockCost} π
+      </button>
+
+      <PiPaymentModal
+        visible={showPayModal}
+        onClose={() => setShowPayModal(false)}
+        userId={piUser.uid}
+        payload={{
+          amount: realm.unlockCost,
+          memo: `Unlock ${realm.name}`,
+          metadata: { type: 'unlock', realm_id: realm.id },
+          onSuccess: handleUnlockRealm
+        }}
+      />
+    </>
+  );
+}
 export default function Home() {
   const { walletAddress, connectWallet } = useContext(PiWalletContext);
 
