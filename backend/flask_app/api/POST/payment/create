@@ -1,0 +1,9 @@
+{
+  "uid": "pi-user-uid",
+  "amount": "1",
+  "memo": "Unlock Moon Fortress",
+  "metadata": {
+    "type": "unlock",
+    "realm_id": "moon_fortress"
+  }
+}
