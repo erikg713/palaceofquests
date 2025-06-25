@@ -1,41 +1,60 @@
-// src/pages/WorldHub.jsx 
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
-import PiUnlockButton from './PiUnlockButton';
+import React, { useState, useContext } from 'react';
+import { PiWalletContext } from '../context/PiWalletContext';
+import PiPaymentModal from '../components/PiPaymentModal';
 
-{!isUnlocked ? (
-  <PiUnlockButton userId={piUser.uid} realm={realm} />
-) : (
-  <button onClick={() => teleport(realm.id)}>Enter Realm</button>
-)}
+export default function WorldHub() {
+  const [showPayModal, setShowPayModal] = useState(false);
+  const { walletAddress, piUser } = useContext(PiWalletContext);
 
-const WorldHub = () => { const navigate = useNavigate();
+  const realm = {
+    id: 'moon_fortress',
+    name: 'Moon Fortress',
+    unlockCost: 2
+  };
 
-const teleport = (zone) => { alert(Teleporting to ${zone} realm...); // navigate(/realm/${zone}); };
+  const handleUnlockRealm = async () => {
+    await fetch(`${import.meta.env.VITE_API_BASE_URL}/unlock-realm`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: piUser?.uid,
+        realm_id: realm.id
+      })
+    });
+    alert(`${realm.name} unlocked!`);
+  };
 
-return ( <div className="relative bg-cover bg-center min-h-screen" style={{ backgroundImage: 'url(https://cdn.openai.com/images/fantasy-realm-hub.jpg)', }} > <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center text-white"> <h1 className="text-4xl font-bold mb-8">Arcane Kingdom Portal</h1> <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> <button onClick={() => teleport('Mystic Forest')} className="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-xl text-lg shadow-md">Mystic Forest</button> <button onClick={() => teleport('Crimson Volcano')} className="bg-red-500 hover:bg-red-600 px-6 py-3 rounded-xl text-lg shadow-md">Crimson Volcano</button> <button onClick={() => teleport('Celestial Tower')} className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl text-lg shadow-md">Celestial Tower</button> </div> </div> </div> ); };
+  if (!walletAddress) {
+    return (
+      <div className="text-center p-6">
+        <h2 className="text-2xl font-bold">Connect Pi Wallet to Continue</h2>
+      </div>
+    );
+  }
 
-export default WorldHub;
+  return (
+    <div className="p-8 space-y-4">
+      <h1 className="text-3xl font-bold text-white">Welcome to the World Hub 🌍</h1>
+      <p className="text-white">Realm: {realm.name}</p>
 
-// src/App.jsx (update to use React Router) import React from 'react'; import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; import InventoryPage from './pages/InventoryPage'; import WorldHub from './pages/WorldHub';
+      <button
+        className="bg-yellow-500 px-4 py-2 rounded text-black font-bold"
+        onClick={() => setShowPayModal(true)}
+      >
+        Unlock {realm.name} for {realm.unlockCost} π
+      </button>
 
-const App = () => ( <Router> <Routes> <Route path="/" element={<WorldHub />} /> <Route path="/inventory" element={<InventoryPage />} /> </Routes> </Router> );
-
-export default App;
-
-// src/pages/WorldHub.jsx import React from 'react'; import { useNavigate } from 'react-router-dom';
-
-const WorldHub = () => { const navigate = useNavigate();
-
-const teleport = (zone) => { alert(Launching from Space Elevator to ${zone}...); // navigate(/realm/${zone}); };
-
-return ( <div className="relative bg-cover bg-center min-h-screen" style={{ backgroundImage: 'url(https://cdn.openai.com/images/fantasy-realm-hub.jpg)', }} > <div className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center text-white text-center"> <h1 className="text-4xl font-extrabold mb-4 text-cyan-300">Launch Platform: Pi Defense Protocol</h1> <p className="max-w-xl mb-6 text-lg text-gray-200">Can you and your allies defend the magical realms and Earth from an alien AI swarm? Board the space elevator and prepare to fight among the stars.</p> <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> <button onClick={() => teleport('Moon Fortress')} className="bg-cyan-600 hover:bg-cyan-700 px-6 py-3 rounded-xl text-lg shadow-xl">Launch to Moon Fortress</button> <button onClick={() => teleport('Plasma Citadel')} className="bg-fuchsia-600 hover:bg-fuchsia-700 px-6 py-3 rounded-xl text-lg shadow-xl">Launch to Plasma Citadel</button> <button onClick={() => teleport('Hive Nexus')} className="bg-red-700 hover:bg-red-800 px-6 py-3 rounded-xl text-lg shadow-xl">Engage Hive Nexus</button> </div> </div> </div> ); };
-
-export default WorldHub;
-
-const isUnlocked = userUnlocks.includes(realm.id);
-{isUnlocked ? (
-  <button onClick={() => teleport(realm.id)}>Enter</button>
-) : (
-  <PiPaymentButton ... />
-)}
+      <PiPaymentModal
+        visible={showPayModal}
+        onClose={() => setShowPayModal(false)}
+        userId={piUser?.uid}
+        payload={{
+          amount: realm.unlockCost,
+          memo: `Unlock ${realm.name}`,
+          metadata: { type: 'unlock', realm_id: realm.id },
+          onSuccess: handleUnlockRealm
+        }}
+      />
+    </div>
+  );
+}
