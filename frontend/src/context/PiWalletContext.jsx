@@ -20,3 +20,24 @@ export const PiWalletProvider = ({ children }) => {
     </PiWalletContext.Provider>
   );
 };. 
+export const PiWalletContext = createContext();
+
+export const PiWalletProvider = ({ children }) => {
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [piUser, setPiUser] = useState(null);
+
+  const connectWallet = async () => {
+    const Pi = window.Pi;
+    if (!Pi) return;
+
+    const user = await Pi.authenticate(['username', 'payment']);
+    setPiUser(user);
+    setWalletAddress(user?.username || null);
+  };
+
+  return (
+    <PiWalletContext.Provider value={{ walletAddress, connectWallet, piUser }}>
+      {children}
+    </PiWalletContext.Provider>
+  );
+};
