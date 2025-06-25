@@ -1,3 +1,4 @@
+// Load environment variables early
 require('dotenv').config();
 
 const express = require('express');
@@ -7,64 +8,100 @@ const Joi = require('joi');
 const winston = require('winston');
 const PiNetwork = require('pi-backend');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 
-const REQUIRED_ENVS = ['PI_API_KEY', 'PI_WALLET_SECRET'];
-for (const key of REQUIRED_ENVS) {
-  if (!process.env[key]) {
-    // eslint-disable-next-line no-console
-    console.error(`Missing required environment variable: ${key}`);
-    process.exit(1);
-  }
+// Environment validation using Joi for clarity and strictness
+const envSchema = Joi.object({
+  PI_API_KEY: Joi.string().required(),
+  PI_WALLET_SECRET: Joi.string().required(),
+  PORT: Joi.number().default(4000),
+  CORS_ORIGIN: Joi.string().allow(''),
+}).unknown();
+
+const { error: envError, value: env } = envSchema.validate(process.env);
+if (envError) {
+  // eslint-disable-next-line no-console
+  console.error(`Environment configuration error: ${envError.message}`);
+  process.exit(1);
 }
 
 const app = express();
 
-// Security middlewares
-app.use(helmet());
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*', methods: ['POST'] }));
+// Security and performance middlewares
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  contentSecurityPolicy: false // Adjust as needed for API endpoints or set custom CSP
+}));
+app.use(cors({
+  origin: env.CORS_ORIGIN || '*',
+  methods: ['POST'],
+}));
 app.use(express.json());
+app.use(compression());
 
-// Logger setup
-const logger = winston.createLogger({
+// Rate limiting (per IP)
+const paymentLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 30,
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Logger with daily rotation and error/info separation
+const { createLogger, format, transports } = winston;
+const DailyRotateFile = require('winston-daily-rotate-file');
+
+const logger = createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
+  format: format.combine(
+    format.timestamp(),
+    format.errors({ stack: true }),
+    format.json()
   ),
   transports: [
-    new winston.transports.Console({ format: winston.format.simple() }),
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new transports.Console({ format: format.simple() }),
+    new DailyRotateFile({
+      filename: 'logs/app-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      maxFiles: '14d',
+      level: 'info',
+    }),
+    new DailyRotateFile({
+      filename: 'logs/error-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      maxFiles: '30d',
+      level: 'error',
+    }),
   ],
 });
 
-const pi = new PiNetwork(process.env.PI_API_KEY, process.env.PI_WALLET_SECRET);
+// Pi Network instance
+const pi = new PiNetwork(env.PI_API_KEY, env.PI_WALLET_SECRET);
 
-// Rate limiting
-const paymentLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 30,
-  message: { error: 'Too many requests, please try again later.' },
-});
-
-// Validation middleware
+// Request validation schema
 const paymentSchema = Joi.object({
-  username: Joi.string().trim().min(3).max(32).required(),
+  username: Joi.string()
+    .trim()
+    .regex(/^[a-zA-Z0-9_]{3,32}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Username must be 3-32 characters, alphanumeric or underscore.'
+    }),
   amount: Joi.number().positive().precision(2).required(),
   metadata: Joi.object().optional(),
 });
 
-function validateBody(schema) {
-  return (req, res, next) => {
-    const { error } = schema.validate(req.body, { abortEarly: false });
-    if (error) {
-      return res.status(400).json({ error: error.details.map(e => e.message).join(', ') });
-    }
-    next();
-  };
-}
+// Centralized validation middleware
+const validateBody = (schema) => (req, res, next) => {
+  const { error } = schema.validate(req.body, { abortEarly: false });
+  if (error) {
+    return res.status(400).json({ error: error.details.map(e => e.message) });
+  }
+  next();
+};
 
-// Routes
+// Main API endpoint
 app.post(
   '/create-payment',
   paymentLimiter,
@@ -84,7 +121,12 @@ app.post(
   }
 );
 
-// Error handling
+// Not found handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Error handler with safe logging (never leak secrets)
 app.use((err, req, res, next) => {
   logger.error({
     message: err.message,
@@ -96,18 +138,19 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error.' });
 });
 
-// Server setup and graceful shutdown
-const PORT = process.env.PORT || 4000;
+// Start server
+const PORT = env.PORT;
 const server = app.listen(PORT, () => {
-  logger.info(`Pi SDK server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });
 
-function shutdown(signal) {
+// Graceful shutdown
+const shutdown = (signal) => {
   logger.info(`${signal} received. Shutting down gracefully.`);
   server.close(() => {
     logger.info('Server closed');
     process.exit(0);
   });
-}
+};
 
 ['SIGTERM', 'SIGINT'].forEach(sig => process.on(sig, () => shutdown(sig)));
