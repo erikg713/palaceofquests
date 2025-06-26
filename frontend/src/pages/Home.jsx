@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import { PiWalletContext } from '../context/PiWalletContext';
 // Assume Pi SDK is globally available or imported as needed
+import PiPaymentButton from '../components/PiPaymentButton';
 
 function Home() {
   const { walletAddress, connectWallet } = useContext(PiWalletContext);
