@@ -1,0 +1,62 @@
+services:
+  python-backend:
+    build:
+      context: ./backend
+    container_name: python-backend
+    restart: unless-stopped
+    init: true
+    # Expose both FastAPI (4000) and Flask fallback (5000) ports
+    ports:
+      - "4000:4000"
+      - "5000:5000"
+    # Use env_file if .env exists in backend directory
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - postgres-db
+    networks:
+      - appnet
+
+  javascript-frontend:
+    build:
+      context: ./frontend
+    container_name: javascript-frontend
+    restart: unless-stopped
+    init: true
+    ports:
+      - "4173:4173"  # Vite preview server
+    # Use env_file if .env exists in frontend directory
+    env_file:
+      - ./frontend/.env
+    networks:
+      - appnet
+    depends_on:
+      - python-backend
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: palace_of_quests
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
