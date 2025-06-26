@@ -1,55 +1,31 @@
-// src/hooks/useUserInventory.js
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-
-export const useUserInventory = (userId) => {
-  const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchInventory = async () => {
-      if (!userId) return;
-      const { data, error } = await supabase
-        .from('inventory')
-        .select('*')
-        .eq('user_id', userId);
-
-      if (error) console.error(error);
-      else setInventory(data);
-      setLoading(false);
-    };
-
-    fetchInventory();
-  }, [userId]);
-
-  const addItem = async (item) => {
-    const { data, error } = await supabase
-      .from('inventory')
-      .insert([{ ...item, user_id: userId }]);
-    if (error) console.error(error);
-    else setInventory([...inventory, data[0]]);
-  };
-
-  return { inventory, loading, addItem };
-};
+// frontend/src/hooks/useInventory.js
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 
+/**
+ * Custom React hook for managing user inventory with Supabase.
+ * @param {string} userId - The unique user identifier.
+ * @returns {{
+ *   inventory: Array,
+ *   loading: boolean,
+ *   error: string,
+ *   refresh: Function
+ * }}
+ */
 const useInventory = (userId) => {
   const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Fetch inventory from Supabase
   const fetchInventory = useCallback(async () => {
     if (!userId) {
       setInventory([]);
       setLoading(false);
       return;
     }
-
     setLoading(true);
     setError("");
-
     try {
       const { data, error } = await supabase
         .from("inventory")
@@ -59,25 +35,33 @@ const useInventory = (userId) => {
       if (error) throw error;
 
       setInventory(
-        (data || []).map((entry) => ({
-          ...entry.items,
-          qty: entry.qty,
-          id: entry.id, // Use inventory id for uniqueness
-        }))
+        Array.isArray(data)
+          ? data.map(entry => ({
+              ...entry.items,
+              qty: entry.qty,
+              id: entry.id,
+            }))
+          : []
       );
     } catch (err) {
-      setError(err.message || "Could not fetch inventory");
+      setError(err.message || "Could not fetch inventory.");
       setInventory([]);
     } finally {
       setLoading(false);
     }
   }, [userId]);
 
+  // Load inventory on mount or when userId changes
   useEffect(() => {
     fetchInventory();
   }, [fetchInventory]);
 
-  return { inventory, loading, error };
+  return {
+    inventory,
+    loading,
+    error,
+    refresh: fetchInventory, // Expose refresh for manual reloads (e.g., after using/selling items)
+  };
 };
 
 export default useInventory;
