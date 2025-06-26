@@ -7,3 +7,9 @@ CREATE TABLE IF NOT EXISTS realms (
 
 -- Index for quick lookup by name (case-insensitive)
 CREATE UNIQUE INDEX IF NOT EXISTS realms_name_idx ON realms (LOWER(name));
+
+-- Sample realms
+INSERT INTO realms (id, name, description)
+VALUES
+    ('a1f4c8e2-7e3e-4b9d-a9e2-6b7c4f2d1ea3', 'Valoria', 'The sunlit realm of heroes.'),
+    ('b2a9d3f5-6e2d-4c1f-b2e4-9d8c7a2b3f6e', 'Umbracore', 'A shadowy domain ruled by ancient magic.');
