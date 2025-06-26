@@ -2,6 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../api/supabaseClient';
 import ItemCard from '../components/ItemCard';
 import ItemDetailModal from '../components/ItemDetailModal';
+import FuseItemsModal from '../components/FuseItemsModal';
+
+const [selectedItems, setSelectedItems] = useState([]);
+const [showFuse, setShowFuse] = useState(false);
+
+const toggleSelect = (item) => {
+  setSelectedItems(prev =>
+    prev.find(i => i.id === item.id)
+      ? prev.filter(i => i.id !== item.id)
+      : [...prev, item]
+  );
+};
 
 export default function Inventory({ userId }) {
   const [inventory, setInventory] = useState([]);
