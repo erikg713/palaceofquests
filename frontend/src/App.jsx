@@ -1,9 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import QuestLog from './components/QuestLog';
+
+// Pages
 import Home from './pages/Home';
 import Quests from './pages/Quests';
 import Marketplace from './pages/Marketplace';
+import InventoryPage from './pages/InventoryPage';
+import WorldHub from './pages/WorldHub';
+import WorldMapPage from './pages/WorldMapPage';
+import NPCPage from './pages/NPCPage';
+
+// Components
+import QuestLog from './components/QuestLog';
+import LanguageToggle from './components/LanguageToggle';
+import GameOverlay from './components/GameOverlay';
+
+// Hooks
 import { usePiAuth } from './hooks/usePiAuth';
 
 const App = () => {
@@ -12,6 +24,7 @@ const App = () => {
   return (
     <Router>
       <div className="App">
+        <LanguageToggle />
         <h1>Palace of Quests</h1>
         {user ? (
           <>
@@ -27,32 +40,25 @@ const App = () => {
           </button>
         )}
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<WorldHub />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/quests" element={<Quests />} />
-<Route path="/quests" element={<QuestsPage />} />
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/map" element={<WorldMapPage />} />
+          <Route path="/npcs" element={<NPCPage />} />
+          <Route
+            path="/hud"
+            element={
+              <GameOverlay>
+                <p>Welcome to the arena.</p>
+              </GameOverlay>
+            }
+          />
         </Routes>
       </div>
     </Router>
   );
 };
-<Route path="/map" element={<WorldMapPage />} />
-export default App;
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import InventoryPage from './pages/InventoryPage';
-import WorldHub from './pages/WorldHub';
-import LanguageToggle from './components/LanguageToggle';
 
-const App = () => (
-  <Router>
-    <LanguageToggle />
-    <Routes>
-      <Route path="/" element={<WorldHub />} />
-      <Route path="/inventory" element={<InventoryPage />} />
-    </Routes>
-  </Router>
-);
-<Route path="/npcs" element={<NPCPage />} />
 export default App;
-<Route path="/hud" element={<GameOverlay><p>Welcome to the arena.</p></GameOverlay>} />
