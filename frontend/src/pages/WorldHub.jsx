@@ -57,4 +57,26 @@ export default function WorldHub() {
       />
     </div>
   );
+  const [loot, setLoot] = useState(null);
+const [showReward, setShowReward] = useState(false);
+
+const handleUnlockRealm = async () => {
+  // Unlock logic
+  await fetch(`${import.meta.env.VITE_API_BASE_URL}/unlock-realm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: piUser.uid, realm_id: realm.id })
+  });
+
+  // Grant loot
+  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/grant-loot`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: piUser.uid, realm_id: realm.id })
+  });
+  const data = await res.json();
+  setLoot(data.granted);
+  setShowReward(true);
+};
+
 }
