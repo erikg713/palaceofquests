@@ -1,150 +1,169 @@
-/**
- * Auth & Pi Payment Routes
- * Handles authentication and Pi Network payment operations.
- * Author: [Your Name or Team]
- */
+"""
+Auth & Pi Payment Routes (Python Flask Version)
+Handles authentication and Pi Network payment operations.
+Author: [Your Name or Team]
+"""
 
-const express = require('express');
-const fetch = require('node-fetch');
-const PiNetwork = require('pi-backend');
+from flask import Blueprint, request, jsonify, current_app
+import requests
+import os
 
-const router = express.Router();
+# Placeholder for PiNetwork Python SDK - implement this class or use a real SDK
+class PiNetwork:
+    def __init__(self, api_key, wallet_private_seed):
+        self.api_key = api_key
+        self.wallet_private_seed = wallet_private_seed
 
-// Environment Variable Validation
-const apiKey = process.env.PI_API_KEY;
-const walletPrivateSeed = process.env.PI_WALLET_PRIVATE_SEED;
-if (!apiKey || !walletPrivateSeed) {
-  throw new Error('Missing PI_API_KEY or PI_WALLET_PRIVATE_SEED environment variables.');
-}
+    def create_payment(self, data):
+        # Implement actual Pi payment creation logic
+        return "payment_id_placeholder"
 
-// Pi Network SDK Instance
-const pi = new PiNetwork(apiKey, walletPrivateSeed);
+    def submit_payment(self, payment_id):
+        # Implement actual Pi payment submission logic
+        return "txid_placeholder"
 
-// --- Utility Functions ---
+    def complete_payment(self, payment_id, txid):
+        # Implement actual Pi payment completion logic
+        return {"payment_id": payment_id, "txid": txid, "status": "completed"}
 
-/**
- * Standard error response helper
- */
-function handleError(res, err, status = 400) {
-  res.status(status).json({ error: err.message || err.toString() });
-}
+    def get_payment(self, payment_id):
+        # Implement actual Pi payment retrieval
+        return {"payment_id": payment_id, "status": "pending"}
 
-/**
- * Validate payment data object
- */
-function validatePaymentData(data) {
-  const { amount, memo, metadata, uid } = data;
-  if (typeof amount !== 'number' || amount <= 0) throw new Error('Invalid amount');
-  if (!memo || typeof memo !== 'string') throw new Error('Invalid memo');
-  if (!metadata || typeof metadata !== 'object') throw new Error('Invalid metadata');
-  if (!uid || typeof uid !== 'string') throw new Error('Invalid uid');
-}
+    def cancel_payment(self, payment_id):
+        # Implement actual Pi payment cancellation
+        return {"payment_id": payment_id, "status": "cancelled"}
 
-// --- Auth Route ---
+    def get_incomplete_server_payments(self):
+        # Implement actual retrieval of incomplete payments
+        return []
 
-router.post('/verify', async (req, res) => {
-  const { accessToken } = req.body;
-  if (!accessToken) return handleError(res, new Error('Missing accessToken'), 400);
+# --- Environment Variable Validation ---
+api_key = os.environ.get('PI_API_KEY')
+wallet_private_seed = os.environ.get('PI_WALLET_PRIVATE_SEED')
+if not api_key or not wallet_private_seed:
+    raise RuntimeError('Missing PI_API_KEY or PI_WALLET_PRIVATE_SEED environment variables.')
 
-  try {
-    const response = await fetch('https://api.minepi.com/v2/me', {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
+pi = PiNetwork(api_key, wallet_private_seed)
+auth_bp = Blueprint('auth', __name__)
 
-    if (!response.ok) throw new Error('Token verification failed');
-    const user = await response.json();
+# --- Utility Functions ---
+def handle_error(error, status=400):
+    message = str(error)
+    response = jsonify({'error': message})
+    response.status_code = status
+    return response
 
-    // Optional: Save session/user to DB here
+def validate_payment_data(data):
+    amount = data.get('amount')
+    memo = data.get('memo')
+    metadata = data.get('metadata')
+    uid = data.get('uid')
+    if not isinstance(amount, (int, float)) or amount <= 0:
+        raise ValueError('Invalid amount')
+    if not memo or not isinstance(memo, str):
+        raise ValueError('Invalid memo')
+    if not metadata or not isinstance(metadata, dict):
+        raise ValueError('Invalid metadata')
+    if not uid or not isinstance(uid, str):
+        raise ValueError('Invalid uid')
 
-    // Use an actual logger in production
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Authenticated Pi user:', user.uid);
-    }
+# --- Auth Route ---
+@auth_bp.route('/verify', methods=['POST'])
+def verify():
+    data = request.get_json(silent=True) or {}
+    access_token = data.get('accessToken')
+    if not access_token:
+        return handle_error('Missing accessToken', 400)
 
-    res.json({ user });
-  } catch (err) {
-    handleError(res, err, 401);
-  }
-});
+    try:
+        headers = {'Authorization': f'Bearer {access_token}'}
+        response = requests.get('https://api.minepi.com/v2/me', headers=headers, timeout=10)
+        response.raise_for_status()
+        user = response.json()
 
-// --- Pi Payment Routes ---
+        # Optional: Save session/user to DB here
 
-router.post('/payment/a2u', async (req, res) => {
-  try {
-    validatePaymentData(req.body);
+        if os.environ.get('FLASK_ENV') != 'production':
+            current_app.logger.info(f'Authenticated Pi user: {user.get("uid")}')
+        return jsonify({'user': user})
+    except requests.RequestException as err:
+        return handle_error('Token verification failed', 401)
+    except Exception as err:
+        return handle_error(err, 500)
 
-    const { amount, memo, metadata, uid } = req.body;
-    const paymentId = await pi.createPayment({ amount, memo, metadata, uid });
+# --- Pi Payment Routes ---
+@auth_bp.route('/payment/a2u', methods=['POST'])
+def create_payment():
+    try:
+        data = request.get_json(silent=True) or {}
+        validate_payment_data(data)
+        payment_id = pi.create_payment(data)
+        # TODO: Store payment_id in your DB for tracking
+        return jsonify({'paymentId': payment_id}), 201
+    except Exception as err:
+        return handle_error(err)
 
-    // TODO: Store paymentId in your DB for tracking
+@auth_bp.route('/payment/submit', methods=['POST'])
+def submit_payment():
+    try:
+        data = request.get_json(silent=True) or {}
+        payment_id = data.get('paymentId')
+        if not payment_id:
+            raise ValueError('Missing paymentId')
+        txid = pi.submit_payment(payment_id)
+        # TODO: Store txid in your DB with payment_id
+        return jsonify({'txid': txid})
+    except Exception as err:
+        return handle_error(err)
 
-    res.status(201).json({ paymentId });
-  } catch (err) {
-    handleError(res, err);
-  }
-});
+@auth_bp.route('/payment/complete', methods=['POST'])
+def complete_payment():
+    try:
+        data = request.get_json(silent=True) or {}
+        payment_id = data.get('paymentId')
+        txid = data.get('txid')
+        if not payment_id or not txid:
+            raise ValueError('Missing paymentId or txid')
+        payment = pi.complete_payment(payment_id, txid)
+        # TODO: Update DB with payment completion
+        return jsonify({'payment': payment})
+    except Exception as err:
+        return handle_error(err)
 
-router.post('/payment/submit', async (req, res) => {
-  try {
-    const { paymentId } = req.body;
-    if (!paymentId) throw new Error('Missing paymentId');
-    const txid = await pi.submitPayment(paymentId);
+@auth_bp.route('/payment/<string:payment_id>', methods=['GET'])
+def get_payment(payment_id):
+    try:
+        if not payment_id:
+            raise ValueError('Missing paymentId param')
+        payment = pi.get_payment(payment_id)
+        if not payment:
+            return handle_error('Payment not found', 404)
+        return jsonify({'payment': payment})
+    except Exception as err:
+        return handle_error(err, 404)
 
-    // TODO: Store txid in your DB with paymentId
+@auth_bp.route('/payment/cancel', methods=['POST'])
+def cancel_payment():
+    try:
+        data = request.get_json(silent=True) or {}
+        payment_id = data.get('paymentId')
+        if not payment_id:
+            raise ValueError('Missing paymentId')
+        payment = pi.cancel_payment(payment_id)
+        # TODO: Mark payment as cancelled in DB
+        return jsonify({'payment': payment})
+    except Exception as err:
+        return handle_error(err)
 
-    res.json({ txid });
-  } catch (err) {
-    handleError(res, err);
-  }
-});
+@auth_bp.route('/payment/incomplete', methods=['GET'])
+def get_incomplete_payments():
+    try:
+        payments = pi.get_incomplete_server_payments()
+        return jsonify({'payments': payments})
+    except Exception as err:
+        return handle_error(err)
 
-router.post('/payment/complete', async (req, res) => {
-  try {
-    const { paymentId, txid } = req.body;
-    if (!paymentId || !txid) throw new Error('Missing paymentId or txid');
-    const payment = await pi.completePayment(paymentId, txid);
-
-    // TODO: Update DB with payment completion
-
-    res.json({ payment });
-  } catch (err) {
-    handleError(res, err);
-  }
-});
-
-router.get('/payment/:paymentId', async (req, res) => {
-  try {
-    const { paymentId } = req.params;
-    if (!paymentId) throw new Error('Missing paymentId param');
-    const payment = await pi.getPayment(paymentId);
-    if (!payment) return handleError(res, new Error('Payment not found'), 404);
-    res.json({ payment });
-  } catch (err) {
-    handleError(res, err, 404);
-  }
-});
-
-router.post('/payment/cancel', async (req, res) => {
-  try {
-    const { paymentId } = req.body;
-    if (!paymentId) throw new Error('Missing paymentId');
-    const payment = await pi.cancelPayment(paymentId);
-
-    // TODO: Mark payment as cancelled in DB
-
-    res.json({ payment });
-  } catch (err) {
-    handleError(res, err);
-  }
-});
-
-router.get('/payment/incomplete', async (_req, res) => {
-  try {
-    const payments = await pi.getIncompleteServerPayments();
-    res.json({ payments });
-  } catch (err) {
-    handleError(res, err);
-  }
-});
-
-module.exports = router;
+# Register this blueprint in your Flask app:
+# from .routes.auth import auth_bp
+# app.register_blueprint(auth_bp, url_prefix='/api/auth')
