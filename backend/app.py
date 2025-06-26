@@ -158,6 +158,42 @@ def complete_payment() -> Any:
     except requests.RequestException as e:
         handle_upstream_error(e, "Pi Network")
 
+@app.route('/fuse-items', methods=['POST'])
+def fuse_items():
+    data = request.json
+    user_id = data.get('user_id')
+    item_ids = data.get('item_ids')
+
+    if not user_id or not item_ids or not isinstance(item_ids, list):
+        return jsonify({'error': 'Missing or invalid payload'}), 400
+
+    # 1. Remove existing items (simulate burn)
+    for item_id in item_ids:
+        requests.delete(
+            f"{SUPABASE_URL}/rest/v1/inventory?id=eq.{item_id}",
+            headers=get_supabase_headers()
+        )
+
+    # 2. Define fusion result (example logic)
+    fused_item = {
+        "item_name": "Omega Blade",
+        "rarity": "legendary"
+    }
+
+    # 3. Add fused item to inventory
+    r = requests.post(
+        f"{SUPABASE_URL}/rest/v1/inventory",
+        headers=get_supabase_headers(),
+        json={
+            "user_id": user_id,
+            "item_name": fused_item["item_name"],
+            "realm_id": "fusion_lab"
+        }
+    )
+
+    return jsonify({"result": fused_item})
+
+
 # --- Main Entry ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
