@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { PiWalletContext } from '../context/PiWalletContext';
 import PiPaymentModal from '../components/PiPaymentModal';
+import RewardModal from '../components/RewardModal';
 
 export default function WorldHub() {
   const [showPayModal, setShowPayModal] = useState(false);
