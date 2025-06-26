@@ -1,105 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../api/supabaseClient';
-import ItemCard from '../components/ItemCard';
-import ItemDetailModal from '../components/ItemDetailModal';
-import FuseItemsModal from '../components/FuseItemsModal';
+// frontend/src/pages/InventoryPage.jsx
 
-const [selectedItems, setSelectedItems] = useState([]);
-const [showFuse, setShowFuse] = useState(false);
+import React, { useContext } from "react";
+import PropTypes from "prop-types";
+import { PiWalletContext } from "../../context/PiWalletContext";
+import useInventory from "../../hooks/useInventory";
 
-const toggleSelect = (item) => {
-  setSelectedItems(prev =>
-    prev.find(i => i.id === item.id)
-      ? prev.filter(i => i.id !== item.id)
-      : [...prev, item]
+const InventoryList = ({ inventory, loading, error }) => {
+  if (loading) return <div className="py-8 text-gray-400">Loading inventory...</div>;
+  if (error) return <div className="py-8 text-red-400">Error: {error}</div>;
+  if (!inventory.length) return <div className="py-8 text-gray-400">No items yet. Complete quests or visit the market!</div>;
+
+  return (
+    <ul className="space-y-2" aria-label="Inventory items">
+      {inventory.map(item => (
+        <li
+          key={item.id}
+          className="bg-gray-800 p-3 rounded shadow flex items-center justify-between"
+          tabIndex={0}
+        >
+          <span>
+            <strong>{item.item_name}</strong>
+            {item.realm_id && (
+              <span className="ml-2 text-xs text-gray-400">from <em>{item.realm_id}</em></span>
+            )}
+          </span>
+          <span className="text-sm text-blue-300">x{item.qty}</span>
+        </li>
+      ))}
+    </ul>
   );
 };
 
-export default function Inventory({ userId }) {
-  const [inventory, setInventory] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [loading, setLoading] = useState(true);
+InventoryList.propTypes = {
+  inventory: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  error: PropTypes.string,
+};
 
-  const fetchInventory = async () => {
-    const { data, error } = await supabase
-      .from('inventory')
-      .select('qty, items(*)')
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('Inventory fetch error:', error);
-    } else {
-      const formatted = data.map((i) => ({
-        ...i.items,
-        qty: i.qty,
-      }));
-      setInventory(formatted);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (userId) fetchInventory();
-  }, [userId]);
-
-  const handleCloseModal = () => {
-    setSelectedItem(null);
-    fetchInventory(); // Refresh after use/sell
-  };
-
-  if (loading) return <p>Loading inventory...</p>;
-
-  return (
-    <div className="inventory-page">
-      <h2>🎒 Inventory</h2>
-      <div className="inventory-grid">
-        {inventory.map((item) => (
-          <ItemCard
-            key={item.id}
-            item={item}
-            onClick={() => setSelectedItem(item)}
-          />
-        ))}
-      </div>
-      {selectedItem && (
-        <ItemDetailModal
-          item={selectedItem}
-          userId={userId}
-          onClose={handleCloseModal}
-        />
-      )}
-    </div>
-  );
-}
-import React, { useEffect, useState, useContext } from 'react';
-import { PiWalletContext } from '../context/PiWalletContext';
-
-export default function InventoryPage() {
+const InventoryPage = () => {
   const { piUser } = useContext(PiWalletContext);
-  const [inventory, setInventory] = useState([]);
-
-  useEffect(() => {
-    if (!piUser?.uid) return;
-
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/inventory/${piUser.uid}`)
-      .then(res => res.json())
-      .then(data => setInventory(data));
-  }, [piUser]);
+  const userId = piUser?.uid;
+  const { inventory, loading, error } = useInventory(userId);
 
   return (
-    <div className="p-6 text-white">
-      <h2 className="text-3xl font-bold mb-4">🎒 Your Inventory</h2>
-      {inventory.length === 0 ? (
-        <p>No items yet. Complete quests or buy from the market.</p>
-      ) : (
-        <ul className="space-y-2">
-          {inventory.map((item) => (
-            <li key={item.id} className="bg-gray-800 p-3 rounded shadow">
-              <strong>{item.item_name}</strong> — from <em>{item.realm_id}</em>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <section className="max-w-2xl mx-auto p-6 text-white" aria-labelledby="inventory-heading">
+      <h1 id="inventory-heading" className="text-3xl font-bold mb-6" tabIndex={0}>
+        🎒 Your Inventory
+      </h1>
+      <InventoryList inventory={inventory} loading={loading} error={error} />
+    </section>
   );
-}
+};
+
+export default InventoryPage;
