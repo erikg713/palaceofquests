@@ -21,3 +21,5 @@ Flask==2.2.5
 Flask-CORS==6.0.0
 Flask-Migrate
 
+werkzeug>=3.0.6 # not directly required, pinned by Snyk to avoid a vulnerability
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
