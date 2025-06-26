@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { PiWalletProvider } from './context/PiWalletContext.jsx';
 import { mockPiSDK } from './utils/mockPi.js';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 // Utility for environment checks
 const isDevelopment = import.meta.env.MODE === 'development';
@@ -43,23 +45,17 @@ const LoadingFallback = () => (
   </div>
 );
 
-// Render the React application
+// Consolidated Render Logic
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <PiWalletProvider>
-        <Suspense fallback={<LoadingFallback />}>
-          <App />
-        </Suspense>
-      </PiWalletProvider>
+      <DndProvider backend={HTML5Backend}>
+        <PiWalletProvider>
+          <Suspense fallback={<LoadingFallback />}>
+            <App />
+          </Suspense>
+        </PiWalletProvider>
+      </DndProvider>
     </ErrorBoundary>
   </React.StrictMode>
-);
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <DndProvider backend={HTML5Backend}>
-    <App />
-  </DndProvider>
 );
