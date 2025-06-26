@@ -1,26 +1,34 @@
-// frontend/src/pages/InventoryPage.jsx
+import React, { useContext, useMemo, Suspense, lazy } from 'react';
+import { PiWalletContext } from '../context/PiWalletContext';
+import useInventory from '../hooks/useInventory';
+import InventorySkeleton from '../components/InventorySkeleton';
+import InventoryErrorBoundary from '../components/InventoryErrorBoundary';
 
-import React, { useContext } from "react";
-import PropTypes from "prop-types";
-import { PiWalletContext } from "../../context/PiWalletContext";
-import useInventory from "../../hooks/useInventory";
-import InventoryList from "../components/InventoryList";
+const InventoryList = lazy(() => import('../components/InventoryList'));
 
 const InventoryPage = () => {
   const { piUser } = useContext(PiWalletContext);
-  const userId = piUser?.uid;
+  const userId = useMemo(() => piUser?.uid ?? null, [piUser]);
   const { inventory, loading, error } = useInventory(userId);
 
   return (
-    <section
-      className="max-w-2xl mx-auto p-6 text-white"
-      aria-labelledby="inventory-heading"
-    >
-      <h1 id="inventory-heading" className="text-3xl font-bold mb-6" tabIndex={0}>
-        🎒 Your Inventory
-      </h1>
-      <InventoryList inventory={inventory} loading={loading} error={error} />
-    </section>
+    <main className="max-w-2xl mx-auto p-6 text-white" aria-labelledby="inventory-heading">
+      <header>
+        <h1
+          id="inventory-heading"
+          className="text-3xl font-bold mb-6"
+          tabIndex={0}
+          aria-label="Your Inventory"
+        >
+          🎒 Your Inventory
+        </h1>
+      </header>
+      <InventoryErrorBoundary>
+        <Suspense fallback={<InventorySkeleton />}>
+          <InventoryList inventory={inventory} loading={loading} error={error} />
+        </Suspense>
+      </InventoryErrorBoundary>
+    </main>
   );
 };
 
