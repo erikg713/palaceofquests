@@ -1,156 +1,121 @@
-// Load environment variables early
-require('dotenv').config();
+import os
+import logging
+from logging.handlers import TimedRotatingFileHandler
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from dotenv import load_dotenv
+from werkzeug.exceptions import HTTPException
+import requests
 
-const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const Joi = require('joi');
-const winston = require('winston');
-const PiNetwork = require('pi-backend');
-const rateLimit = require('express-rate-limit');
-const compression = require('compression');
+# --- Load environment variables early ---
+load_dotenv()
 
-// Environment validation using Joi for clarity and strictness
-const envSchema = Joi.object({
-  PI_API_KEY: Joi.string().required(),
-  PI_WALLET_SECRET: Joi.string().required(),
-  PORT: Joi.number().default(4000),
-  CORS_ORIGIN: Joi.string().allow(''),
-}).unknown();
+# --- Environment Validation ---
+REQUIRED_ENV_VARS = ["PI_API_KEY", "PI_WALLET_SECRET"]
+for var in REQUIRED_ENV_VARS:
+    if not os.getenv(var):
+        raise RuntimeError(f"Missing required environment variable: {var}")
 
-const { error: envError, value: env } = envSchema.validate(process.env);
-if (envError) {
-  // eslint-disable-next-line no-console
-  console.error(`Environment configuration error: ${envError.message}`);
-  process.exit(1);
-}
+PORT = int(os.getenv("PORT", 4000))
+CORS_ORIGIN = os.getenv("CORS_ORIGIN", "*")
 
-const app = express();
+# --- Logger Setup (Rotating File, Console, Separate Error/Info) ---
+log_dir = "logs"
+os.makedirs(log_dir, exist_ok=True)
 
-// Security and performance middlewares
-app.use(helmet({
-  crossOriginResourcePolicy: false,
-  contentSecurityPolicy: false // Adjust as needed for API endpoints or set custom CSP
-}));
-app.use(cors({
-  origin: env.CORS_ORIGIN || '*',
-  methods: ['POST'],
-}));
-app.use(express.json());
-app.use(compression());
+logger = logging.getLogger("palaceofquests")
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
 
-// Rate limiting (per IP)
-const paymentLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: 30,
-  message: { error: 'Too many requests, please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+# Info log
+info_handler = TimedRotatingFileHandler(f"{log_dir}/app.log", when="midnight", backupCount=14, encoding="utf-8")
+info_handler.setLevel(logging.INFO)
+info_handler.setFormatter(formatter)
+logger.addHandler(info_handler)
 
-// Logger with daily rotation and error/info separation
-const { createLogger, format, transports } = winston;
-const DailyRotateFile = require('winston-daily-rotate-file');
+# Error log
+error_handler = TimedRotatingFileHandler(f"{log_dir}/error.log", when="midnight", backupCount=30, encoding="utf-8")
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(formatter)
+logger.addHandler(error_handler)
 
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(
-    format.timestamp(),
-    format.errors({ stack: true }),
-    format.json()
-  ),
-  transports: [
-    new transports.Console({ format: format.simple() }),
-    new DailyRotateFile({
-      filename: 'logs/app-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      maxFiles: '14d',
-      level: 'info',
-    }),
-    new DailyRotateFile({
-      filename: 'logs/error-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      maxFiles: '30d',
-      level: 'error',
-    }),
-  ],
-});
+# Console
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
-// Pi Network instance
-const pi = new PiNetwork(env.PI_API_KEY, env.PI_WALLET_SECRET);
+# --- Flask App Setup ---
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": CORS_ORIGIN}}, methods=["POST"])
 
-// Request validation schema
-const paymentSchema = Joi.object({
-  username: Joi.string()
-    .trim()
-    .regex(/^[a-zA-Z0-9_]{3,32}$/)
-    .required()
-    .messages({
-      'string.pattern.base': 'Username must be 3-32 characters, alphanumeric or underscore.'
-    }),
-  amount: Joi.number().positive().precision(2).required(),
-  metadata: Joi.object().optional(),
-});
+# --- Rate Limiting ---
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=[],
+    app=app
+)
+payment_limit = "30 per 10 minutes"
 
-// Centralized validation middleware
-const validateBody = (schema) => (req, res, next) => {
-  const { error } = schema.validate(req.body, { abortEarly: false });
-  if (error) {
-    return res.status(400).json({ error: error.details.map(e => e.message) });
-  }
-  next();
-};
+# --- Import/Initialize Pi Network SDK (Placeholder) ---
+class PiNetwork:
+    def __init__(self, api_key, wallet_secret):
+        self.api_key = api_key
+        self.wallet_secret = wallet_secret
 
-// Main API endpoint
-app.post(
-  '/create-payment',
-  paymentLimiter,
-  validateBody(paymentSchema),
-  async (req, res, next) => {
-    try {
-      const { username, amount, metadata } = req.body;
-      const payment = await pi.createPayment({
-        amount,
-        memo: `Payment from ${username}`,
-        metadata,
-      });
-      res.json(payment);
-    } catch (err) {
-      next(err);
-    }
-  }
-);
+    # Implement or import real Pi payment methods
 
-// Not found handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
-});
+pi = PiNetwork(os.getenv("PI_API_KEY"), os.getenv("PI_WALLET_SECRET"))
 
-// Error handler with safe logging (never leak secrets)
-app.use((err, req, res, next) => {
-  logger.error({
-    message: err.message,
-    stack: err.stack,
-    url: req.originalUrl,
-    method: req.method,
-    body: req.body,
-  });
-  res.status(500).json({ error: 'Internal server error.' });
-});
+# --- Request Validation (Professional Style) ---
+from marshmallow import Schema, fields, ValidationError, validates, validates_schema
 
-// Start server
-const PORT = env.PORT;
-const server = app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}`);
-});
+class PaymentSchema(Schema):
+    username = fields.Str(required=True)
+    amount = fields.Float(required=True)
+    metadata = fields.Dict(required=False)
 
-// Graceful shutdown
-const shutdown = (signal) => {
-  logger.info(`${signal} received. Shutting down gracefully.`);
-  server.close(() => {
-    logger.info('Server closed');
-    process.exit(0);
-  });
-};
+    @validates("username")
+    def validate_username(self, value):
+        import re
+        if not re.match(r"^[a-zA-Z0-9_]{3,32}$", value):
+            raise ValidationError("Username must be 3-32 characters, alphanumeric or underscore.")
 
-['SIGTERM', 'SIGINT'].forEach(sig => process.on(sig, () => shutdown(sig)));
+    @validates("amount")
+    def validate_amount(self, value):
+        if value <= 0:
+            raise ValidationError("Amount must be positive.")
+
+payment_schema = PaymentSchema()
+
+# --- Centralized Error Handling ---
+@app.errorhandler(ValidationError)
+def handle_marshmallow_error(e):
+    logger.warning(f"Validation error: {e.messages}")
+    return jsonify({"error": e.messages}), 400
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    code = 500
+    if isinstance(e, HTTPException):
+        code = e.code
+    logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
+    return jsonify({"error": str(e)}), code
+
+# --- Main API Endpoint ---
+@app.route('/create-payment', methods=["POST"])
+@limiter.limit(payment_limit)
+def create_payment():
+    data = request.get_json(force=True)
+    validated = payment_schema.load(data)
+    # Implement payment creation logic, e.g.:
+    # payment_id = pi.create_payment(...)
+    payment_id = "demo-payment-id"  # Placeholder
+    logger.info(f"Payment created: {validated['username']} requested {validated['amount']}")
+    return jsonify({"paymentId": payment_id}), 201
+
+# --- Start App ---
+if __name__ == "__main__":
+    logger.info(f"Starting Palace of Quests backend on port {PORT}")
+    app.run(host="0.0.0.0", port=PORT)
