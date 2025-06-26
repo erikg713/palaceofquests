@@ -59,3 +59,35 @@ export default function Inventory({ userId }) {
     </div>
   );
 }
+import React, { useEffect, useState, useContext } from 'react';
+import { PiWalletContext } from '../context/PiWalletContext';
+
+export default function InventoryPage() {
+  const { piUser } = useContext(PiWalletContext);
+  const [inventory, setInventory] = useState([]);
+
+  useEffect(() => {
+    if (!piUser?.uid) return;
+
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/inventory/${piUser.uid}`)
+      .then(res => res.json())
+      .then(data => setInventory(data));
+  }, [piUser]);
+
+  return (
+    <div className="p-6 text-white">
+      <h2 className="text-3xl font-bold mb-4">🎒 Your Inventory</h2>
+      {inventory.length === 0 ? (
+        <p>No items yet. Complete quests or buy from the market.</p>
+      ) : (
+        <ul className="space-y-2">
+          {inventory.map((item) => (
+            <li key={item.id} className="bg-gray-800 p-3 rounded shadow">
+              <strong>{item.item_name}</strong> — from <em>{item.realm_id}</em>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

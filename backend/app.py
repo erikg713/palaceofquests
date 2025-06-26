@@ -1,70 +1,104 @@
 import os
 import uuid
 import logging
-import requests
+from typing import Any, Dict
 
+import requests
 from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 from dotenv import load_dotenv
+from marshmallow import Schema, fields, ValidationError
 
-# --- Load .env ---
+# --- Environment Setup ---
 load_dotenv()
 
-# --- Logging & Setup ---
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("palaceofquests.backend")
-
-app = Flask(__name__)
-CORS(app)
+REQUIRED_ENV_VARS = ["PI_API_KEY", "SUPABASE_URL", "SUPABASE_KEY"]
+missing_vars = [v for v in REQUIRED_ENV_VARS if not os.getenv(v)]
+if missing_vars:
+    raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 PI_API_KEY = os.getenv("PI_API_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-SESSION = requests.Session()
 
-# --- Helper Headers ---
-def get_pi_headers():
-    if not PI_API_KEY:
-        logger.error("PI_API_KEY missing")
-        raise RuntimeError("Internal server config error")
+# --- Logging ---
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+logger = logging.getLogger("palaceofquests.backend")
+
+# --- Flask App ---
+app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": ["https://your-frontend-domain.com", "http://localhost:3000"]}})  # Adjust as needed
+
+# --- HTTP Session with Retries ---
+SESSION = requests.Session()
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+retry_strategy = Retry(
+    total=3,
+    status_forcelist=[429, 500, 502, 503, 504],
+    backoff_factor=1,
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+SESSION.mount("https://", adapter)
+SESSION.mount("http://", adapter)
+
+# --- Utils ---
+def get_pi_headers() -> Dict[str, str]:
     return {"Authorization": f"Key {PI_API_KEY}", "Content-Type": "application/json"}
 
-def get_supabase_headers():
-    if not SUPABASE_KEY:
-        logger.error("SUPABASE_KEY missing")
-        raise RuntimeError("Internal server config error")
+def get_supabase_headers() -> Dict[str, str]:
     return {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json"
     }
 
-# --- Health Check ---
-@app.route("/")
-def index():
+def handle_upstream_error(e: Exception, api: str):
+    logger.error(f"{api} failed: {str(e)}")
+    response = getattr(e, 'response', None)
+    if response is not None:
+        logger.error(f"Upstream response: {response.text}")
+    abort(502, description=f"Upstream {api} API error")
+
+def json_error(message: str, status_code: int = 400):
+    response = jsonify({"error": message})
+    response.status_code = status_code
+    return response
+
+# --- Schemas ---
+class PaymentCreateSchema(Schema):
+    uid = fields.String(required=True)
+    amount = fields.Float(required=True)
+    memo = fields.String(required=True)
+    metadata = fields.Dict(missing=dict)
+
+class PaymentActionSchema(Schema):
+    paymentId = fields.String(required=True)
+    txid = fields.String(required=False)
+
+# --- Routes ---
+
+@app.route("/", methods=["GET"])
+def health() -> Any:
+    """Health check."""
     return jsonify({"status": "Backend running"})
 
-# --- Pi Payment: Create ---
 @app.route('/payment/create', methods=['POST'])
-def create_payment():
-    data = request.get_json(force=True)
-    uid = data.get('uid')
-    amount = data.get('amount')
-    memo = data.get('memo')
-    metadata = data.get('metadata', {})
-
-    if not all([uid, amount, memo]):
-        return jsonify({"error": "Missing required fields"}), 400
+def create_payment() -> Any:
+    """Create a new Pi payment."""
+    try:
+        data = PaymentCreateSchema().load(request.get_json(force=True))
+    except ValidationError as err:
+        return json_error(err.messages, 400)
 
     payment_id = str(uuid.uuid4())
     payload = {
-        "amount": str(amount),
-        "memo": memo,
-        "metadata": metadata,
-        "uid": uid,
+        "amount": str(data["amount"]),
+        "memo": data["memo"],
+        "metadata": data.get("metadata", {}),
+        "uid": data["uid"],
         "payment_id": payment_id
     }
-
     try:
         resp = SESSION.post(
             "https://api.minepi.com/v2/payments",
@@ -73,17 +107,20 @@ def create_payment():
             timeout=10
         )
         resp.raise_for_status()
+        logger.info(f"Payment created: {payment_id} for user {data['uid']}")
         return jsonify(resp.json())
     except requests.RequestException as e:
-        logger.error(f"/payment/create failed: {e}")
-        abort(502, description="Pi Network payment API error")
+        handle_upstream_error(e, "Pi Network")
 
-# --- Pi Payment: Approve ---
 @app.route("/payment/approve", methods=["POST"])
-def approve():
-    payment_id = request.json.get("paymentId")
-    if not payment_id:
-        abort(400, description="Missing paymentId")
+def approve_payment() -> Any:
+    """Approve a Pi payment."""
+    try:
+        data = PaymentActionSchema().load(request.get_json(force=True), partial=("txid",))
+    except ValidationError as err:
+        return json_error(err.messages, 400)
+
+    payment_id = data["paymentId"]
     try:
         resp = SESSION.post(
             f"https://api.minepi.com/v2/payments/{payment_id}/approve",
@@ -91,18 +128,23 @@ def approve():
             timeout=10
         )
         resp.raise_for_status()
+        logger.info(f"Payment approved: {payment_id}")
         return jsonify(resp.json())
     except requests.RequestException as e:
-        logger.error(f"/payment/approve failed: {e}")
-        abort(502, description="Upstream payment API error")
+        handle_upstream_error(e, "Pi Network")
 
-# --- Pi Payment: Complete ---
 @app.route("/payment/complete", methods=["POST"])
-def complete():
-    payment_id = request.json.get("paymentId")
-    txid = request.json.get("txid")
-    if not payment_id or not txid:
-        abort(400, description="Missing paymentId or txid")
+def complete_payment() -> Any:
+    """Complete a Pi payment."""
+    try:
+        data = PaymentActionSchema().load(request.get_json(force=True))
+    except ValidationError as err:
+        return json_error(err.messages, 400)
+
+    payment_id = data["paymentId"]
+    txid = data.get("txid")
+    if not txid:
+        return json_error("Missing txid", 400)
     try:
         resp = SESSION.post(
             f"https://api.minepi.com/v2/payments/{payment_id}/complete",
@@ -111,31 +153,11 @@ def complete():
             timeout=10
         )
         resp.raise_for_status()
+        logger.info(f"Payment completed: {payment_id} txid={txid}")
         return jsonify(resp.json())
     except requests.RequestException as e:
-        logger.error(f"/payment/complete failed: {e}")
-        abort(502, description="Upstream payment API error")
+        handle_upstream_error(e, "Pi Network")
 
-# --- Unlock Realm (Pi-Verified) ---
-@app.route("/unlock-realm", methods=["POST"])
-def unlock():
-    data = request.get_json(force=True)
-    user_id, realm_id = data.get("user_id"), data.get("realm_id")
-    if not user_id or not realm_id:
-        abort(400, description="Missing user_id or realm_id")
-    try:
-        resp = SESSION.post(
-            f"{SUPABASE_URL}/rest/v1/unlocks",
-            headers=get_supabase_headers(),
-            json={"user_id": user_id, "realm_id": realm_id},
-            timeout=10
-        )
-        resp.raise_for_status()
-        return jsonify(resp.json())
-    except requests.RequestException as e:
-        logger.error(f"/unlock-realm failed: {e}")
-        abort(502, description="Upstream Supabase error")
-
-# --- Run ---
+# --- Main Entry ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
