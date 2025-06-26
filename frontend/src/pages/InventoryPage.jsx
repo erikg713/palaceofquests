@@ -9,7 +9,30 @@ const InventoryList = ({ inventory, loading, error }) => {
   if (loading) return <div className="py-8 text-gray-400">Loading inventory...</div>;
   if (error) return <div className="py-8 text-red-400">Error: {error}</div>;
   if (!inventory.length) return <div className="py-8 text-gray-400">No items yet. Complete quests or visit the market!</div>;
+// In your page or parent component
+import React, { useState, useContext } from "react";
+import InventoryModal from "../components/InventoryModal";
+import { PiWalletContext } from "../context/PiWalletContext";
 
+const InventoryPage = () => {
+  const { piUser } = useContext(PiWalletContext);
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className="btn-primary">
+        Open Inventory
+      </button>
+      <InventoryModal
+        userId={piUser?.uid}
+        open={open}
+        onClose={() => setOpen(false)}
+      />
+    </>
+  );
+};
+
+export default InventoryPage;
   return (
     <ul className="space-y-2" aria-label="Inventory items">
       {inventory.map(item => (
