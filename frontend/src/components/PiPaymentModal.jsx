@@ -8,6 +8,17 @@ export default function PiPaymentModal({ userId, visible, onClose, payload }) {
   const handlePayment = async () => {
     setStatus('processing');
     setError(null);
+payload={{
+  amount: 5,
+  memo: "Fuse Nano Sword + Plasma Shield",
+  metadata: {
+    type: 'fuse',
+    items: ['nano_sword', 'plasma_shield']
+  },
+  onSuccess: async () => {
+    await fetch('/fuse-items', { method: 'POST', ... })
+  }
+}}
 
     const { amount, memo, metadata, onSuccess } = payload;
 
