@@ -5,17 +5,43 @@
   "description": "Palace of Quests | Pi Network dApp frontend",
   "author": "Erik G.",
   "license": "PIOS",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erikg713/palaceofquests.git",
+    "directory": "frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/erikg713/palaceofquests/issues"
+  },
+  "homepage": "https://github.com/erikg713/palaceofquests#readme",
+  "keywords": [
+    "pi-network",
+    "dapp",
+    "web3",
+    "frontend",
+    "react",
+    "vite",
+    "typescript"
+  ],
   "main": "src/index.tsx",
+  "files": [
+    "src",
+    "public",
+    "!**/*.test.*"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --max-warnings=0",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,md}\"",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "test": "echo \"No tests specified\" && exit 0",
+    "audit": "npm audit --audit-level=moderate"
   },
   "dependencies": {
-    "@pi-network/pi-sdk": "^2.0.0",         
+    "@pi-network/pi-sdk": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -27,7 +53,8 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.34.0",
     "prettier": "^3.2.5",
-    "vite": "^5.2.0"
+    "vite": "^5.2.0",
+    "rimraf": "^5.0.5"
   },
   "engines": {
     "node": ">=18.0.0"
