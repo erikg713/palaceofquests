@@ -1,23 +1,15 @@
-// frontend/src/hooks/useInventory.js
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 /**
- * Custom React hook for managing user inventory with Supabase.
- * @param {string} userId - The unique user identifier.
- * @returns {{
- *   inventory: Array,
- *   loading: boolean,
- *   error: string,
- *   refresh: Function
- * }}
+ * Hook to fetch and manage a user's inventory from Supabase.
+ * @param {string} userId
  */
 const useInventory = (userId) => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch inventory from Supabase
   const fetchInventory = useCallback(async () => {
     if (!userId) {
       setInventory([]);
@@ -29,17 +21,17 @@ const useInventory = (userId) => {
     try {
       const { data, error } = await supabase
         .from("inventory")
-        .select("qty, id, items(*)")
+        .select("id, qty, items(*)")
         .eq("user_id", userId);
 
       if (error) throw error;
 
       setInventory(
         Array.isArray(data)
-          ? data.map(entry => ({
+          ? data.map((entry) => ({
               ...entry.items,
               qty: entry.qty,
-              id: entry.id,
+              invId: entry.id, // inventory record id
             }))
           : []
       );
@@ -51,7 +43,6 @@ const useInventory = (userId) => {
     }
   }, [userId]);
 
-  // Load inventory on mount or when userId changes
   useEffect(() => {
     fetchInventory();
   }, [fetchInventory]);
@@ -60,7 +51,7 @@ const useInventory = (userId) => {
     inventory,
     loading,
     error,
-    refresh: fetchInventory, // Expose refresh for manual reloads (e.g., after using/selling items)
+    refresh: fetchInventory, // for manual refresh after mutations
   };
 };
 
