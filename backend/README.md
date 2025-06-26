@@ -28,6 +28,55 @@ This backend serves as the foundation for a decentralized questing platform in t
 - Integration-ready architecture for on-chain/off-chain interoperability
 
 ---
+---
+
+## Running with Docker
+
+You can run the entire Palace of Quests stack using Docker Compose for a consistent, reproducible development or deployment environment.
+
+### Requirements
+- **Docker** and **Docker Compose** installed
+- No need to install Node.js or Python locally—everything runs in containers
+
+### Service Overview
+| Service               | Port(s) Exposed | Key Version(s)         | Notes                                  |
+|----------------------|-----------------|------------------------|----------------------------------------|
+| Backend (Python)     | 4000, 5000      | Python 3.9             | FastAPI (4000) or Flask fallback (5000) |
+| Frontend (JavaScript)| 4173            | Node.js 22.13.1        | Vite preview server                    |
+| Database (Postgres)  | 5432            | postgres:latest        | Data persisted in Docker volume        |
+
+### Environment Variables
+- **Backend:**
+  - Reads from `./backend/.env` (see sample in repo for required keys)
+- **Frontend:**
+  - Reads from `./frontend/.env` (see sample in repo for required keys)
+- **Database:**
+  - `POSTGRES_USER=postgres`
+  - `POSTGRES_PASSWORD=postgres`
+  - `POSTGRES_DB=palace_of_quests`
+
+### Build & Run
+
+From the project root directory:
+
+\```bash
+docker compose up --build
+\```
+
+- The backend will be available at [http://localhost:4000](http://localhost:4000) (FastAPI) or [http://localhost:5000](http://localhost:5000) (Flask fallback)
+- The frontend will be available at [http://localhost:4173](http://localhost:4173)
+- The Postgres database will be accessible at `localhost:5432`
+
+### Special Notes
+- **Backend**: The container auto-detects whether to run FastAPI (`flask_app/main.py`) or Flask (`app.py`).
+- **Frontend**: Uses Vite's preview server for production-like builds.
+- **Database**: Data is persisted in a Docker volume (`pgdata`).
+- **Networking**: All services are on the `appnet` Docker network for internal communication.
+- **Healthchecks**: Postgres includes a healthcheck for readiness.
+
+---
+
+
 
 ## Prerequisites
 
