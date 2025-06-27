@@ -1,21 +1,26 @@
 {
   "name": "Palace of Quests",
-  "short_name": "PoQ",
-  "description": "An immersive quest platform to explore wondrous adventures and conquer challenges with friends.",
+  "short_name": "Palace of Quests",
+  "description": "Embark on epic quests, conquer challenges, and build your legend in the ultimate Pi Network gaming adventure. Explore immersive worlds, earn rewards, and connect with fellow adventurers.",
   "lang": "en-US",
   "dir": "ltr",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#000000",
-  "theme_color": "#4b0082",
+  "background_color": "#1e1e30",
+  "theme_color": "#865DFF",
   "categories": [
-    "entertainment",
     "games",
+    "entertainment", 
     "adventure",
     "education",
-    "role-playing"
+    "role-playing",
+    "strategy",
+    "social",
+    "productivity",
+    "utilities",
+    "finance"
   ],
   "icons": [
     {
@@ -25,21 +30,21 @@
       "purpose": "any"
     },
     {
-      "src": "/icon-96x96.png",
+      "src": "/icon-96x96.png", 
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "/icon-128x128.png",
-      "sizes": "128x128",
+      "sizes": "128x128", 
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "/icon-144x144.png",
       "sizes": "144x144",
-      "type": "image/png",
+      "type": "image/png", 
       "purpose": "any"
     },
     {
@@ -55,7 +60,7 @@
       "purpose": "any"
     },
     {
-      "src": "/icon-384x384.png",
+      "src": "/icon-384x384.png", 
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any"
@@ -67,40 +72,64 @@
       "purpose": "any"
     },
     {
-      "src": "/icon-maskable-192.png",
-      "sizes": "192x192",
+      "src": "/icon-maskable-192x192.png",
+      "sizes": "192x192", 
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-maskable-512.png",
+      "src": "/icon-maskable-512x512.png",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/png", 
       "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/screenshot1.png",
+      "src": "/screenshots/gameplay-screenshot-1.png",
       "sizes": "540x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Main quest interface and character progression"
     },
     {
-      "src": "/screenshots/screenshot2.png",
+      "src": "/screenshots/marketplace-screenshot-2.png", 
       "sizes": "540x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Pi Network marketplace and trading system"
+    },
+    {
+      "src": "/screenshots/desktop-screenshot-1.png",
+      "sizes": "1280x720", 
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Full desktop gaming experience"
     }
   ],
   "related_applications": [
     {
       "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=com.example.poq",
-      "id": "com.example.poq"
+      "url": "https://play.google.com/store/apps/details?id=com.palaceofquests.app",
+      "id": "com.palaceofquests.app"
     },
     {
-      "platform": "itunes",
-      "url": "https://apps.apple.com/us/app/example-pq/id123456789"
+      "platform": "itunes", 
+      "url": "https://apps.apple.com/us/app/palace-of-quests/id123456789",
+      "id": "123456789"
     }
   ],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+palaceofquests",
+      "url": "/quest?id=%s"
+    }
+  ]
 }
