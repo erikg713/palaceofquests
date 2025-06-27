@@ -3,61 +3,60 @@ import logging
 from flask import Blueprint, request, jsonify, current_app
 import requests
 
-marketplace = Blueprint('marketplace', __name__)
+# Set up Blueprint for modular Flask app structure
+marketplace_bp = Blueprint('marketplace', __name__)
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-
+# Configure logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 def get_supabase_headers():
+    if not SUPABASE_KEY:
+        logger.error("SUPABASE_KEY is not set in environment variables.")
+        raise RuntimeError("Supabase API key missing.")
     return {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
-@marketplace.route('/marketplace/sell', methods=['POST'])
+@marketplace_bp.route('/marketplace/sell', methods=['POST'])
 def sell_item():
     """
-    Endpoint to mark an item as sold and remove it from inventory.
-    Expects JSON: { "item_id": <id> }
+    Mark an item as sold; removes it from inventory.
+    Expects JSON body: { "item_id": <int> }
     """
     data = request.get_json(silent=True)
     if not data or 'item_id' not in data:
-        logging.warning("Missing item_id in request payload.")
-        return jsonify({"error": "Missing 'item_id' in request body."}), 400
+        logger.warning("Missing or invalid 'item_id' in request payload.")
+        return jsonify({"error": "Missing or invalid 'item_id'."}), 400
 
     item_id = data['item_id']
+    if not isinstance(item_id, int) or item_id <= 0:
+        logger.warning(f"Invalid item_id value: {item_id}")
+        return jsonify({"error": "Invalid 'item_id'."}), 400
 
     try:
-        resp = requests.delete(
+        # Remove item from inventory
+        response = requests.delete(
             f"{SUPABASE_URL}/rest/v1/inventory?id=eq.{item_id}",
             headers=get_supabase_headers(),
             timeout=5
         )
-        if resp.status_code not in (200, 204):
-            logging.error(f"Supabase delete failed: {resp.text}")
+        if response.status_code not in (200, 204):
+            logger.error(f"Failed to remove item {item_id}: {response.text}")
             return jsonify({"error": "Failed to mark item as sold."}), 502
 
-        # TODO: Log sale in a sales table; trigger payout logic here.
-
-        logging.info(f"Item {item_id} marked as sold.")
+        # Sale logging and payout logic can be added here
+        logger.info(f"Item {item_id} successfully marked as sold.")
         return jsonify({"status": "sold"}), 200
 
     except requests.RequestException as exc:
-        logging.exception("Error communicating with Supabase")
+        logger.exception("Error communicating with Supabase")
+        return jsonify({"error": "Upstream service error."}), 502
+    except Exception as exc:
+        logger.exception("Unexpected error in sell_item endpoint")
         return jsonify({"error": "Internal server error."}), 500
-
-@app.route('/marketplace/sell', methods=['POST'])
-def sell_item():
-    data = request.json
-    item_id = data.get('item_id')
-
-    # Optional: remove item
-    requests.delete(f"{SUPABASE_URL}/rest/v1/inventory?id=eq.{item_id}",
-                    headers=get_supabase_headers())
-
-    # Log sale (optional)
-    # Trigger Pi payout in future phase
-    return jsonify({"status": "sold"})
