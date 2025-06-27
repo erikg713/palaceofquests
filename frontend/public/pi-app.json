@@ -1,11 +1,12 @@
 {
   "name": "Palace of Quests",
-  "description": "Explore a Web3 metaverse world and complete quests for Pi rewards.",
-  "permissions": ["username", "payments"],
-  "sdk_version": "2.0",
+  "version": "1.0.0",
+  "description": "Palace of Quests is an immersive Web3 metaverse adventure where players explore, complete unique quests, and earn Pi rewards. Join a vibrant community and shape your own journey.",
   "category": "games",
-  "developer_contact": "your@email.com",
-  "homepage_url": "https://yourdomain.com",
-  "chains": [],
+  "permissions": ["username", "payments"],
+  "chains": ["Pi Network"],
+  "sdk_version": "2.0",
+  "homepage_url": "https://palaceofquests.com",
+  "developer_contact": "support@palaceofquests.com",
   "sandbox": true
 }
