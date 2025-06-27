@@ -4,11 +4,11 @@
  * Weapon rarity levels (enum-like for consistency)
  */
 export const RARITY = Object.freeze({
-  COMMON: 'common',
-  UNCOMMON: 'uncommon',
-  RARE: 'rare',
-  EPIC: 'epic',
-  LEGENDARY: 'legendary',
+  COMMON: "common",
+  UNCOMMON: "uncommon",
+  RARE: "rare",
+  EPIC: "epic",
+  LEGENDARY: "legendary",
 });
 
 /**
@@ -16,40 +16,40 @@ export const RARITY = Object.freeze({
  */
 const weapons = [
   {
-    id: 'swd001',
-    name: 'Iron Sword',
-    type: 'sword',
+    id: "swd001",
+    name: "Iron Sword",
+    type: "sword",
     damage: 12,
     weight: 5,
     rarity: RARITY.COMMON,
-    description: 'Reliable and sturdy, favored by novice adventurers.',
+    description: "Reliable and sturdy, favored by novice adventurers.",
   },
   {
-    id: 'axe002',
-    name: 'Battle Axe',
-    type: 'axe',
+    id: "axe002",
+    name: "Battle Axe",
+    type: "axe",
     damage: 18,
     weight: 8,
     rarity: RARITY.UNCOMMON,
-    description: 'Heavy, but devastating in the right hands.',
+    description: "Heavy, but devastating in the right hands.",
   },
   {
-    id: 'bow003',
-    name: 'Longbow',
-    type: 'bow',
+    id: "bow003",
+    name: "Longbow",
+    type: "bow",
     damage: 10,
     weight: 3,
     rarity: RARITY.COMMON,
-    description: 'Enables ranged attacks with precision.',
+    description: "Enables ranged attacks with precision.",
   },
   {
-    id: 'dag004',
-    name: 'Shadow Dagger',
-    type: 'dagger',
+    id: "dag004",
+    name: "Shadow Dagger",
+    type: "dagger",
     damage: 8,
     weight: 1,
     rarity: RARITY.RARE,
-    description: 'Light and quick, perfect for stealth attacks.',
+    description: "Light and quick, perfect for stealth attacks.",
   },
   // Extend as needed
 ];
@@ -77,7 +77,7 @@ export function getWeaponById(id) {
  * @returns {object[]}
  */
 export function getWeaponsByType(type) {
-  return weapons.filter(w => w.type === type);
+  return weapons.filter((w) => w.type === type);
 }
 
 /**
@@ -86,7 +86,7 @@ export function getWeaponsByType(type) {
  * @returns {object[]}
  */
 export function getWeaponsByRarity(rarity) {
-  return weapons.filter(w => w.rarity === rarity);
+  return weapons.filter((w) => w.rarity === rarity);
 }
 
 /**

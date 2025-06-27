@@ -1,8 +1,8 @@
-import React from 'react'
-import './styles/ui.css'
+import React from "react";
+import "./styles/ui.css";
 
 export default function QuestTracker({ activeQuest }) {
-  if (!activeQuest) return null
+  if (!activeQuest) return null;
 
   return (
     <div className="quest-tracker">
@@ -10,5 +10,5 @@ export default function QuestTracker({ activeQuest }) {
       <p>{activeQuest.description}</p>
       <p className="quest-progress">Progress: {activeQuest.progress}%</p>
     </div>
-  )
+  );
 }

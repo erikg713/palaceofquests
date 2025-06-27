@@ -1,25 +1,5 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from "react";
 
-export const PiWalletContext = createContext();
-
-export const PiWalletProvider = ({ children }) => {
-  const [walletAddress, setWalletAddress] = useState(null);
-
-  const connectWallet = async () => {
-    try {
-      const result = await window?.Pi?.authenticate(); // pseudo-SDK call
-      setWalletAddress(result?.address);
-    } catch (err) {
-      console.error('Wallet connection failed:', err);
-    }
-  };
-
-  return (
-    <PiWalletContext.Provider value={{ walletAddress, connectWallet }}>
-      {children}
-    </PiWalletContext.Provider>
-  );
-};. 
 export const PiWalletContext = createContext();
 
 export const PiWalletProvider = ({ children }) => {
@@ -27,12 +7,16 @@ export const PiWalletProvider = ({ children }) => {
   const [piUser, setPiUser] = useState(null);
 
   const connectWallet = async () => {
-    const Pi = window.Pi;
-    if (!Pi) return;
+    try {
+      const Pi = window.Pi;
+      if (!Pi) return;
 
-    const user = await Pi.authenticate(['username', 'payment']);
-    setPiUser(user);
-    setWalletAddress(user?.username || null);
+      const user = await Pi.authenticate(["username", "payment"]);
+      setPiUser(user);
+      setWalletAddress(user?.username || null);
+    } catch (err) {
+      console.error("Wallet connection failed:", err);
+    }
   };
 
   return (

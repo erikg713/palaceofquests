@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export default function QuestCard({ quest, onStart, onComplete }) {
   const handleStart = () => {
@@ -13,7 +13,7 @@ export default function QuestCard({ quest, onStart, onComplete }) {
     <div className={`quest-card status-${quest.status}`}>
       <div className="quest-header">
         <h3>{quest.title}</h3>
-        <span className="quest-status">{quest.status.replace('_', ' ')}</span>
+        <span className="quest-status">{quest.status.replace("_", " ")}</span>
       </div>
       <p className="quest-description">{quest.description}</p>
 
@@ -24,14 +24,17 @@ export default function QuestCard({ quest, onStart, onComplete }) {
       </div>
 
       <div className="quest-actions">
-        {quest.status === 'available' && (
-          <button className="quest-button" onClick={handleStart}>Accept</button>
+        {quest.status === "available" && (
+          <button className="quest-button" onClick={handleStart}>
+            Accept
+          </button>
         )}
-        {quest.status === 'in_progress' && (
-          <button className="quest-button" onClick={handleComplete}>Complete</button>
+        {quest.status === "in_progress" && (
+          <button className="quest-button" onClick={handleComplete}>
+            Complete
+          </button>
         )}
       </div>
     </div>
   );
 }
-

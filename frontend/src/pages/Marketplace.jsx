@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import MarketplaceItem from '../components/MarketplaceItem';
-import { supabase } from '../api/supabaseClient';
-import { buyMarketItem } from '../hooks/marketActions';
+import React, { useEffect, useState } from "react";
+import MarketplaceItem from "../components/MarketplaceItem";
+import { supabase } from "../api/supabaseClient";
+import { buyMarketItem } from "../hooks/marketActions";
 
 export default function Marketplace({ userId }) {
   const [marketItems, setMarketItems] = useState([]);
@@ -9,12 +9,12 @@ export default function Marketplace({ userId }) {
 
   const fetchMarketItems = async () => {
     const { data, error } = await supabase
-      .from('market_items')
-      .select('id, price, items(*)') // include item details
-      .order('price', { ascending: true });
+      .from("market_items")
+      .select("id, price, items(*)") // include item details
+      .order("price", { ascending: true });
 
     if (error) {
-      console.error('Market fetch error:', error);
+      console.error("Market fetch error:", error);
     } else {
       setMarketItems(data);
     }
@@ -28,7 +28,7 @@ export default function Marketplace({ userId }) {
       alert(`✅ Purchased ${marketItem.items.name} for ${marketItem.price} Pi`);
     } catch (err) {
       console.error(err);
-      alert('❌ Purchase failed');
+      alert("❌ Purchase failed");
     }
   };
 

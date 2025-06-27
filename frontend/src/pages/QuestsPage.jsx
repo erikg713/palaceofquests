@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import QuestTracker from '../components/QuestTracker';
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+import QuestTracker from "../components/QuestTracker";
 
 export default function QuestsPage() {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUserId(user?.id);
     };
     fetchUser();

@@ -1,21 +1,21 @@
-import React, { useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import './styles/ui.css';
+import React, { useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
+import "./styles/ui.css";
 
 const ItemDetailModal = ({ item, onClose }) => {
   // Ensure modal closes on Escape key
   const handleKeyDown = useCallback(
     (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
   if (!item) return null;
@@ -41,13 +41,13 @@ const ItemDetailModal = ({ item, onClose }) => {
       >
         <h3 id="item-modal-title">{item.name}</h3>
         <p>
-          <strong>Type:</strong> {item.type || 'Unknown'}
+          <strong>Type:</strong> {item.type || "Unknown"}
         </p>
         <p>
-          <strong>Rarity:</strong> {item.rarity || 'Common'}
+          <strong>Rarity:</strong> {item.rarity || "Common"}
         </p>
         <p id="item-modal-desc">
-          <strong>Description:</strong> {item.description || 'No description.'}
+          <strong>Description:</strong> {item.description || "No description."}
         </p>
         <div className="modal-actions">
           <button type="button" onClick={handleUse}>

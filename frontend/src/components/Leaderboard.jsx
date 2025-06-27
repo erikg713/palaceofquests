@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Leaderboard() {
   const [players, setPlayers] = useState([]);
@@ -7,9 +7,9 @@ export default function Leaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('username, level, xp, pi_spent')
-        .order('xp', { ascending: false })
+        .from("profiles")
+        .select("username, level, xp, pi_spent")
+        .order("xp", { ascending: false })
         .limit(25);
 
       if (data) setPlayers(data);
@@ -33,7 +33,10 @@ export default function Leaderboard() {
         </thead>
         <tbody>
           {players.map((player, index) => (
-            <tr key={player.username} className="border-t border-gray-700 text-sm">
+            <tr
+              key={player.username}
+              className="border-t border-gray-700 text-sm"
+            >
               <td className="py-2">{index + 1}</td>
               <td>{player.username}</td>
               <td>{player.level}</td>

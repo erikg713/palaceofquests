@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import AchievementGallery from '../components/AchievementGallery';
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+import AchievementGallery from "../components/AchievementGallery";
 
 export default function AchievementsPage() {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUserId(user?.id);
     };
     fetchUser();

@@ -1,7 +1,7 @@
-import React, { Suspense, useRef, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Stars } from '@react-three/drei';
-import { usePiPayment } from '../hooks/usePiPayment';
+import React, { Suspense, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, Stars } from "@react-three/drei";
+import { usePiPayment } from "../hooks/usePiPayment";
 
 function Box({ position, item }) {
   const ref = useRef();
@@ -23,7 +23,7 @@ function Box({ position, item }) {
       scale={hovered ? 1.2 : 1}
     >
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'gold' : 'orange'} />
+      <meshStandardMaterial color={hovered ? "gold" : "orange"} />
     </mesh>
   );
 }

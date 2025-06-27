@@ -1,6 +1,6 @@
-import React, { memo, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import styles from './MarketplaceItem.module.css';
+import React, { memo, useCallback } from "react";
+import PropTypes from "prop-types";
+import styles from "./MarketplaceItem.module.css";
 
 const MarketplaceItem = ({ item, onBuy }) => {
   const { name, type, price, rarity, iconUrl } = item;
@@ -23,15 +23,15 @@ const MarketplaceItem = ({ item, onBuy }) => {
         draggable={false}
       />
       <div className={styles.itemInfo}>
-        <div
-          className={styles.itemName}
-          title={name}
-        >
+        <div className={styles.itemName} title={name}>
           {name}
         </div>
         <div className={styles.itemType}>{type}</div>
         <div className={styles.itemPrice}>
-          <span role="img" aria-label="currency">💰</span> {price} Pi
+          <span role="img" aria-label="currency">
+            💰
+          </span>{" "}
+          {price} Pi
         </div>
       </div>
       <button

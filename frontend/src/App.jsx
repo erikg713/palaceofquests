@@ -1,22 +1,22 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Pages
-import Home from './pages/Home';
-import Quests from './pages/Quests';
-import Marketplace from './pages/Marketplace';
-import InventoryPage from './pages/InventoryPage';
-import WorldHub from './pages/WorldHub';
-import WorldMapPage from './pages/WorldMapPage';
-import NPCPage from './pages/NPCPage';
+import Home from "./pages/Home";
+import Quests from "./pages/Quests";
+import Marketplace from "./pages/Marketplace";
+import InventoryPage from "./pages/InventoryPage";
+import WorldHub from "./pages/WorldHub";
+import WorldMapPage from "./pages/WorldMapPage";
+import NPCPage from "./pages/NPCPage";
 
 // Components
-import QuestLog from './components/QuestLog';
-import LanguageToggle from './components/LanguageToggle';
-import GameOverlay from './components/GameOverlay';
+import QuestLog from "./components/QuestLog";
+import LanguageToggle from "./components/LanguageToggle";
+import GameOverlay from "./pages/GameOverlay";
 
 // Hooks
-import { usePiAuth } from './hooks/usePiAuth';
+import { usePiAuth } from "./hooks/usePiAuth";
 
 const App = () => {
   const { user, loginWithPi, unlockQuest } = usePiAuth();

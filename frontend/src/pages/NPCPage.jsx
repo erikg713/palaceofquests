@@ -1,5 +1,5 @@
-import { npcs } from '../data/npcs';
-import NPCDialog from '../components/NPCDialog';
+import { npcs } from "../data/npcs";
+import NPCDialog from "../components/NPCDialog";
 
 export default function NPCPage() {
   return (

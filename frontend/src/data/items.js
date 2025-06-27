@@ -13,84 +13,84 @@
 
 /** Rarity constants for consistency */
 export const RARITY = Object.freeze({
-  COMMON: 'common',
-  RARE: 'rare',
-  EPIC: 'epic',
-  LEGENDARY: 'legendary',
+  COMMON: "common",
+  RARE: "rare",
+  EPIC: "epic",
+  LEGENDARY: "legendary",
 });
 
 /** @type {{ [category: string]: InventoryItem[] }} */
 export const inventoryData = {
   weapons: [
     {
-      id: 'w1',
-      name: 'Elder Sword',
+      id: "w1",
+      name: "Elder Sword",
       rarity: RARITY.EPIC,
       stars: 4,
-      icon: '🗡️',
-      description: 'A mighty sword imbued with ancient power.',
+      icon: "🗡️",
+      description: "A mighty sword imbued with ancient power.",
     },
     {
-      id: 'w2',
-      name: 'Mystic Bow',
+      id: "w2",
+      name: "Mystic Bow",
       rarity: RARITY.RARE,
       stars: 3,
-      icon: '🏹',
-      description: 'A bow crafted with magical properties.',
+      icon: "🏹",
+      description: "A bow crafted with magical properties.",
     },
   ],
   armor: [
     {
-      id: 'a1',
-      name: 'Crystal Shield',
+      id: "a1",
+      name: "Crystal Shield",
       rarity: RARITY.LEGENDARY,
       stars: 5,
-      icon: '🛡️',
-      description: 'A shield forged from enchanted crystals.',
+      icon: "🛡️",
+      description: "A shield forged from enchanted crystals.",
     },
     {
-      id: 'a2',
-      name: 'Shadow Cloak',
+      id: "a2",
+      name: "Shadow Cloak",
       rarity: RARITY.RARE,
       stars: 3,
-      icon: '🧥',
-      description: 'A cloak that conceals the wearer in darkness.',
+      icon: "🧥",
+      description: "A cloak that conceals the wearer in darkness.",
     },
   ],
   potions: [
     {
-      id: 'p1',
-      name: 'Health Potion',
+      id: "p1",
+      name: "Health Potion",
       rarity: RARITY.COMMON,
       stars: 2,
-      icon: '🧪',
-      description: 'Restores a moderate amount of health.',
+      icon: "🧪",
+      description: "Restores a moderate amount of health.",
     },
     {
-      id: 'p2',
-      name: 'Mana Elixir',
+      id: "p2",
+      name: "Mana Elixir",
       rarity: RARITY.EPIC,
       stars: 4,
-      icon: '🔮',
-      description: 'Replenishes a large portion of mana.',
+      icon: "🔮",
+      description: "Replenishes a large portion of mana.",
     },
   ],
   artifacts: [
     {
-      id: 'ar1',
-      name: 'Time Orb',
+      id: "ar1",
+      name: "Time Orb",
       rarity: RARITY.LEGENDARY,
       stars: 5,
-      icon: '🌀',
-      description: 'Manipulates the flow of time itself.',
+      icon: "🌀",
+      description: "Manipulates the flow of time itself.",
     },
     {
-      id: 'ar2',
-      name: 'Fire Crystal',
+      id: "ar2",
+      name: "Fire Crystal",
       rarity: RARITY.EPIC,
       stars: 4,
-      icon: '🔥',
-      description: 'Channels the power of fire.',
+      icon: "🔥",
+      description: "Channels the power of fire.",
     },
   ],
 };
@@ -101,16 +101,18 @@ export const inventoryData = {
  */
 function validateInventoryData(data) {
   for (const [cat, items] of Object.entries(data)) {
-    items.forEach(item => {
+    items.forEach((item) => {
       if (
         !item.id ||
         !item.name ||
         !Object.values(RARITY).includes(item.rarity) ||
-        typeof item.stars !== 'number' ||
+        typeof item.stars !== "number" ||
         !item.icon ||
         !item.description
       ) {
-        throw new Error(`Invalid item in category "${cat}": ${JSON.stringify(item)}`);
+        throw new Error(
+          `Invalid item in category "${cat}": ${JSON.stringify(item)}`,
+        );
       }
     });
   }
@@ -125,7 +127,7 @@ validateInventoryData(inventoryData);
 export function getItemsByRarity(rarity) {
   return Object.values(inventoryData)
     .flat()
-    .filter(item => item.rarity === rarity);
+    .filter((item) => item.rarity === rarity);
 }
 
 /**

@@ -33,7 +33,7 @@ const useInventory = (userId) => {
               qty: entry.qty,
               invId: entry.id, // inventory record id
             }))
-          : []
+          : [],
       );
     } catch (err) {
       setError(err.message || "Could not fetch inventory.");

@@ -1,13 +1,13 @@
-import { supabase } from '../api/supabaseClient';
+import { supabase } from "../api/supabaseClient";
 
 export async function fetchHotbar(userId) {
   const { data, error } = await supabase
-    .from('hotbar')
-    .select('*')
-    .eq('user_id', userId);
+    .from("hotbar")
+    .select("*")
+    .eq("user_id", userId);
 
   if (error) {
-    console.error('Hotbar fetch error:', error);
+    console.error("Hotbar fetch error:", error);
     return [];
   }
 
@@ -16,8 +16,9 @@ export async function fetchHotbar(userId) {
 
 export async function updateHotbarSlot(userId, slotIndex, itemId) {
   const { error } = await supabase
-    .from('hotbar')
+    .from("hotbar")
     .upsert({ user_id: userId, slot_index: slotIndex, item_id: itemId });
 
-  if (error) console.error('Hotbar update error:', error);
-}e
+  if (error) console.error("Hotbar update error:", error);
+}
+e;

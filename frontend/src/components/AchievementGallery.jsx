@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { allAchievements } from '../data/achievements';
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+import { allAchievements } from "../data/achievements";
 
 export default function AchievementGallery({ userId }) {
   const [earnedIds, setEarnedIds] = useState([]);
@@ -9,9 +9,9 @@ export default function AchievementGallery({ userId }) {
     if (!userId) return;
     const fetchAchievements = async () => {
       const { data } = await supabase
-        .from('achievements')
-        .select('achievement_id')
-        .eq('user_id', userId);
+        .from("achievements")
+        .select("achievement_id")
+        .eq("user_id", userId);
       setEarnedIds(data.map((row) => row.achievement_id));
     };
     fetchAchievements();
@@ -27,13 +27,19 @@ export default function AchievementGallery({ userId }) {
             <div
               key={a.id}
               className={`p-3 rounded-lg text-center border ${
-                earned ? 'border-green-500' : 'border-gray-700 opacity-50'
+                earned ? "border-green-500" : "border-gray-700 opacity-50"
               }`}
             >
-              <img src={a.icon} alt={a.name} className="mx-auto w-16 h-16 mb-2" />
+              <img
+                src={a.icon}
+                alt={a.name}
+                className="mx-auto w-16 h-16 mb-2"
+              />
               <p className="font-semibold">{a.name}</p>
               <p className="text-sm text-gray-400">{a.description}</p>
-              {earned && <p className="text-green-400 text-xs mt-1">Unlocked</p>}
+              {earned && (
+                <p className="text-green-400 text-xs mt-1">Unlocked</p>
+              )}
             </div>
           );
         })}

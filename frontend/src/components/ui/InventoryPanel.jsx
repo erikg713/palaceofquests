@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
-import ItemDetailModal from './ItemDetailModal';
-import './styles/ui.css';
+import React, { useState, useMemo } from "react";
+import PropTypes from "prop-types";
+import ItemDetailModal from "./ItemDetailModal";
+import "./styles/ui.css";
 
 export default function InventoryPanel({ inventory }) {
   const [selectedItem, setSelectedItem] = useState(null);
@@ -9,7 +9,7 @@ export default function InventoryPanel({ inventory }) {
   if (!Array.isArray(inventory)) {
     return <div className="inventory-panel">No items in inventory.</div>;
   }
-  
+
   if (inventory.length === 0) {
     return <div className="inventory-panel">Your inventory is empty.</div>;
   }
@@ -49,6 +49,6 @@ InventoryPanel.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       qty: PropTypes.number.isRequired,
-    })
+    }),
   ).isRequired,
 };

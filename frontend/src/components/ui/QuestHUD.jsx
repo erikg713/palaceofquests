@@ -1,5 +1,5 @@
-import React from 'react';
-import './QuestHUD.css';
+import React from "react";
+import "./QuestHUD.css";
 
 export default function QuestHUD({ quests, onSelect }) {
   const activeQuests = quests.slice(0, 8); // Show up to 8 in HUD

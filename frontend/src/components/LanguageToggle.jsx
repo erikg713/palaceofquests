@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const languages = [
-  { code: 'en', label: 'English' },
-  { code: 'es', label: 'Español' },
-  { code: 'fr', label: 'Français' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'zh', label: '中文' },
-  { code: 'ar', label: 'العربية' },
-  { code: 'nl', label: 'Nederlands' },
-  { code: 'yue', label: '粵語' },
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "zh", label: "中文" },
+  { code: "ar", label: "العربية" },
+  { code: "nl", label: "Nederlands" },
+  { code: "yue", label: "粵語" },
 ];
 
 const LanguageToggle = () => {
-  const [selected, setSelected] = useState('en');
+  const [selected, setSelected] = useState("en");
 
   return (
     <div className="fixed top-4 right-4 bg-black bg-opacity-40 p-2 rounded-md">

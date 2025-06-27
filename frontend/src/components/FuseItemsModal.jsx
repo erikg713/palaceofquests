@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import PiPaymentModal from './PiPaymentModal';
+import React, { useState } from "react";
+import PiPaymentModal from "./PiPaymentModal";
 
 export default function FuseItemsModal({ userId, selectedItems, onClose }) {
   const [showPayment, setShowPayment] = useState(false);
@@ -7,12 +7,12 @@ export default function FuseItemsModal({ userId, selectedItems, onClose }) {
 
   const handleFusion = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/fuse-items`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user_id: userId,
-        item_ids: selectedItems.map(i => i.id)
-      })
+        item_ids: selectedItems.map((i) => i.id),
+      }),
     });
     const data = await res.json();
     setFusionResult(data.result);
@@ -24,7 +24,7 @@ export default function FuseItemsModal({ userId, selectedItems, onClose }) {
         <div className="bg-white text-black rounded-xl p-6 w-[90%] max-w-md shadow-xl">
           <h2 className="text-xl font-bold mb-4">⚡ Fuse Items</h2>
           <ul className="mb-4">
-            {selectedItems.map(item => (
+            {selectedItems.map((item) => (
               <li key={item.id}>{item.item_name}</li>
             ))}
           </ul>
@@ -51,9 +51,9 @@ export default function FuseItemsModal({ userId, selectedItems, onClose }) {
         userId={userId}
         payload={{
           amount: 3,
-          memo: 'Fuse rare items',
-          metadata: { type: 'fuse', item_ids: selectedItems.map(i => i.id) },
-          onSuccess: handleFusion
+          memo: "Fuse rare items",
+          metadata: { type: "fuse", item_ids: selectedItems.map((i) => i.id) },
+          onSuccess: handleFusion,
         }}
       />
     </>

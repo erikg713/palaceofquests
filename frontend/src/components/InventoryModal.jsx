@@ -74,10 +74,14 @@ const InventoryModal = ({ userId, open, onClose }) => {
                 <div>
                   <strong>{item.item_name}</strong>
                   {item.qty > 1 && (
-                    <span className="ml-2 text-sm text-blue-300">×{item.qty}</span>
+                    <span className="ml-2 text-sm text-blue-300">
+                      ×{item.qty}
+                    </span>
                   )}
                   {item.description && (
-                    <div className="text-xs text-gray-400">{item.description}</div>
+                    <div className="text-xs text-gray-400">
+                      {item.description}
+                    </div>
                   )}
                 </div>
                 <div className="space-x-1">
@@ -115,7 +119,9 @@ const InventoryModal = ({ userId, open, onClose }) => {
                   {actionLoading ? "Processing..." : "Use"}
                 </button>
               </div>
-              {actionError && <div className="text-xs text-red-500 mt-2">{actionError}</div>}
+              {actionError && (
+                <div className="text-xs text-red-500 mt-2">{actionError}</div>
+              )}
             </div>
           </div>
         )}

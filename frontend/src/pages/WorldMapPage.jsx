@@ -1,13 +1,15 @@
-import RealmMap from '../components/RealmMap';
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import RealmMap from "../components/RealmMap";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function WorldMapPage() {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUserId(user?.id);
     };
     getUser();

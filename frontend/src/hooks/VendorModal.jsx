@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import MarketplaceItem from './MarketplaceItem'; // from your earlier component
-import { buyMarketItem } from '../hooks/marketActions'; // to implement
+import React, { useEffect, useState } from "react";
+import MarketplaceItem from "./MarketplaceItem"; // from your earlier component
+import { buyMarketItem } from "../hooks/marketActions"; // to implement
 
 export default function VendorModal({ userId, onClose }) {
   const [marketItems, setMarketItems] = useState([]);
 
   useEffect(() => {
-    fetch('/api/market_items')
-      .then(res => res.json())
+    fetch("/api/market_items")
+      .then((res) => res.json())
       .then(setMarketItems)
       .catch(console.error);
   }, []);
@@ -21,14 +21,12 @@ export default function VendorModal({ userId, onClose }) {
     <div className="modal-backdrop">
       <div className="modal-content vendor-modal">
         <h2>Marketplace</h2>
-        <button className="close-button" onClick={onClose}>X</button>
+        <button className="close-button" onClick={onClose}>
+          X
+        </button>
         <div className="marketplace-list">
-          {marketItems.map(mi => (
-            <MarketplaceItem
-              key={mi.id}
-              item={mi}
-              onBuy={handleBuy}
-            />
+          {marketItems.map((mi) => (
+            <MarketplaceItem key={mi.id} item={mi} onBuy={handleBuy} />
           ))}
         </div>
       </div>

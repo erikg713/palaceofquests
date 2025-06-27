@@ -1,12 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useDrop } from 'react-dnd';
-import clsx from 'clsx';
+import React from "react";
+import PropTypes from "prop-types";
+import { useDrop } from "react-dnd";
+import clsx from "clsx";
 
 export default function EquipmentSlot({ slotType, equippedItem, onEquip }) {
   const [{ isOver, canDrop }, dropRef] = useDrop(
     () => ({
-      accept: 'ITEM',
+      accept: "ITEM",
       drop: (item) => {
         if (item.type === slotType) onEquip(item);
       },
@@ -16,13 +16,13 @@ export default function EquipmentSlot({ slotType, equippedItem, onEquip }) {
         canDrop: monitor.canDrop(),
       }),
     }),
-    [equippedItem]
+    [equippedItem],
   );
 
   return (
     <div
       ref={dropRef}
-      className={clsx('equip-slot', slotType, {
+      className={clsx("equip-slot", slotType, {
         highlight: isOver && canDrop,
       })}
       role="button"
@@ -31,8 +31,8 @@ export default function EquipmentSlot({ slotType, equippedItem, onEquip }) {
     >
       {equippedItem ? (
         <img
-          src={equippedItem.iconUrl || '/default-icon.png'}
-          alt={equippedItem.name || 'Equipped item'}
+          src={equippedItem.iconUrl || "/default-icon.png"}
+          alt={equippedItem.name || "Equipped item"}
           loading="lazy"
         />
       ) : (

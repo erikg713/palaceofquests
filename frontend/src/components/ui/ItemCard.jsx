@@ -1,28 +1,31 @@
-import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import { useDrag } from 'react-dnd';
+import React, { useMemo } from "react";
+import PropTypes from "prop-types";
+import { useDrag } from "react-dnd";
 
 // External styles (recommended: add to ItemCard.module.css or similar)
-import './ItemCard.css';
+import "./ItemCard.css";
 
 function ItemCard({ item }) {
   const { name, iconUrl, rarity } = item;
 
   // Memoize drag configuration to avoid unnecessary recalculations
-  const dragSpec = useMemo(() => ({
-    type: 'ITEM',
-    item: { ...item },
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
+  const dragSpec = useMemo(
+    () => ({
+      type: "ITEM",
+      item: { ...item },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
     }),
-  }), [item]);
+    [item],
+  );
 
   const [{ isDragging }, dragRef] = useDrag(dragSpec);
 
   return (
     <div
       ref={dragRef}
-      className={`item-card rarity-${rarity.toLowerCase()}${isDragging ? ' dragging' : ''}`}
+      className={`item-card rarity-${rarity.toLowerCase()}${isDragging ? " dragging" : ""}`}
       aria-label={`Draggable item: ${name}, Rarity: ${rarity}`}
       tabIndex={0}
       role="listitem"

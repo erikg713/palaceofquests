@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 /**
  * useEquipItem - A custom React hook for equipping player avatars with items.
@@ -10,7 +10,7 @@ const useEquipItem = (initialEquipment = {}) => {
 
   // Equip an item to a specific slot (e.g., 'head', 'body', 'weapon')
   const equipItem = useCallback((slot, item) => {
-    setEquipment(prev => ({
+    setEquipment((prev) => ({
       ...prev,
       [slot]: item,
     }));
@@ -18,7 +18,7 @@ const useEquipItem = (initialEquipment = {}) => {
 
   // Remove an item from a specific slot
   const unequipItem = useCallback((slot) => {
-    setEquipment(prev => {
+    setEquipment((prev) => {
       const updated = { ...prev };
       delete updated[slot];
       return updated;
@@ -26,9 +26,12 @@ const useEquipItem = (initialEquipment = {}) => {
   }, []);
 
   // Check if a specific item is equipped in a slot
-  const isEquipped = useCallback((slot, itemId) => {
-    return equipment[slot]?.id === itemId;
-  }, [equipment]);
+  const isEquipped = useCallback(
+    (slot, itemId) => {
+      return equipment[slot]?.id === itemId;
+    },
+    [equipment],
+  );
 
   return {
     equipment,

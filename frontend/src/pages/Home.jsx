@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState, useCallback } from 'react';
-import { PiWalletContext } from '../context/PiWalletContext';
-import PiPaymentButton from '../components/PiPaymentButton';
+import { useContext, useEffect, useState, useCallback } from "react";
+import { PiWalletContext } from "../context/PiWalletContext";
+import PiPaymentButton from "../components/PiPaymentButton";
 
 export default function Home() {
   const { walletAddress, connectWallet } = useContext(PiWalletContext);
-  const [paymentStatus, setPaymentStatus] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState("");
   const [showPayment, setShowPayment] = useState(false);
 
   useEffect(() => {
@@ -15,20 +15,24 @@ export default function Home() {
     try {
       await connectWallet();
     } catch (err) {
-      setPaymentStatus('Failed to connect wallet. Please refresh and try again.');
+      setPaymentStatus(
+        "Failed to connect wallet. Please refresh and try again.",
+      );
     }
   }, [connectWallet]);
 
   // Handles Pi payment completion
   const handlePaymentComplete = useCallback(() => {
-    setPaymentStatus('✅ Payment successful! Welcome to the adventure.');
+    setPaymentStatus("✅ Payment successful! Welcome to the adventure.");
     setShowPayment(false);
     // You can trigger unlocks, navigation, or UI updates here
   }, []);
 
   // Handles Pi payment errors
   const handlePaymentError = useCallback((error) => {
-    setPaymentStatus(`❌ Payment failed: ${error?.message || 'Unknown error.'}`);
+    setPaymentStatus(
+      `❌ Payment failed: ${error?.message || "Unknown error."}`,
+    );
   }, []);
 
   return (
@@ -36,7 +40,10 @@ export default function Home() {
       <div className="max-w-md w-full p-8 rounded-xl shadow-2xl bg-black/70 backdrop-blur-md">
         <header className="mb-6">
           <h1 className="text-4xl font-bold flex items-center gap-2">
-            <span role="img" aria-label="Palace">🏰</span> Palace of Quests
+            <span role="img" aria-label="Palace">
+              🏰
+            </span>{" "}
+            Palace of Quests
           </h1>
           <p className="mt-2 text-lg text-slate-200">
             An epic Web3 adventure built for the Pi Network.
@@ -65,9 +72,7 @@ export default function Home() {
               />
             )}
             {paymentStatus && (
-              <div className="mt-4 text-center text-sm">
-                {paymentStatus}
-              </div>
+              <div className="mt-4 text-center text-sm">{paymentStatus}</div>
             )}
           </div>
         ) : (

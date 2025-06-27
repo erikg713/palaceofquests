@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import QuestCard from '../components/QuestCard';
-import { supabase } from '../api/supabaseClient';
+import React, { useEffect, useState } from "react";
+import QuestCard from "../components/QuestCard";
+import { supabase } from "../api/supabaseClient";
 
 export default function Quests({ userId }) {
   const [quests, setQuests] = useState([]);
@@ -10,12 +10,12 @@ export default function Quests({ userId }) {
   const fetchPlayerQuests = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('player_quests')
-      .select('*, quests(*)') // Includes quest title/description via FK
-      .eq('user_id', userId);
+      .from("player_quests")
+      .select("*, quests(*)") // Includes quest title/description via FK
+      .eq("user_id", userId);
 
     if (error) {
-      console.error('Fetch quests error:', error);
+      console.error("Fetch quests error:", error);
     } else {
       const formatted = data.map((row) => ({
         ...row.quests,
@@ -28,19 +28,19 @@ export default function Quests({ userId }) {
 
   const startQuest = async (questId) => {
     await supabase
-      .from('player_quests')
-      .update({ status: 'in_progress', started_at: new Date() })
-      .eq('user_id', userId)
-      .eq('quest_id', questId);
+      .from("player_quests")
+      .update({ status: "in_progress", started_at: new Date() })
+      .eq("user_id", userId)
+      .eq("quest_id", questId);
     fetchPlayerQuests();
   };
 
   const completeQuest = async (questId) => {
     await supabase
-      .from('player_quests')
-      .update({ status: 'completed', completed_at: new Date() })
-      .eq('user_id', userId)
-      .eq('quest_id', questId);
+      .from("player_quests")
+      .update({ status: "completed", completed_at: new Date() })
+      .eq("user_id", userId)
+      .eq("quest_id", questId);
 
     // Optionally: add XP & coins to player_stats here
     fetchPlayerQuests();

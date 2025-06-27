@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { initiatePiPayment } from '../utils/piPayment';
+import { useState } from "react";
+import { initiatePiPayment } from "../utils/piPayment";
 
 export default function PiUnlockButton({ userId, realm }) {
   const [loading, setLoading] = useState(false);
@@ -13,20 +13,20 @@ export default function PiUnlockButton({ userId, realm }) {
         uid: userId,
         amount: realm.unlockCost,
         memo: `Unlock ${realm.name}`,
-        metadata: { type: 'unlock', realm_id: realm.id }
+        metadata: { type: "unlock", realm_id: realm.id },
       });
 
       // Now unlock in Supabase
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/unlock-realm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, realm_id: realm.id })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, realm_id: realm.id }),
       });
 
       alert(`${realm.name} unlocked!`);
     } catch (err) {
       console.error(err);
-      setError('Payment failed or cancelled.');
+      setError("Payment failed or cancelled.");
     } finally {
       setLoading(false);
     }
@@ -38,7 +38,9 @@ export default function PiUnlockButton({ userId, realm }) {
       onClick={handlePay}
       disabled={loading}
     >
-      {loading ? 'Processing...' : `Unlock ${realm.name} for ${realm.unlockCost} π`}
+      {loading
+        ? "Processing..."
+        : `Unlock ${realm.name} for ${realm.unlockCost} π`}
     </button>
   );
 }

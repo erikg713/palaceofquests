@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../api/supabaseClient';
+import React, { useEffect, useState } from "react";
+import { supabase } from "../api/supabaseClient";
 
 export default function ShopModal({ userId, onClose }) {
   const [shopItems, setShopItems] = useState([]);
@@ -7,9 +7,9 @@ export default function ShopModal({ userId, onClose }) {
 
   const fetchItems = async () => {
     const { data, error } = await supabase
-      .from('market_items')
-      .select('id, price, items(*)')
-      .order('price', { ascending: true });
+      .from("market_items")
+      .select("id, price, items(*)")
+      .order("price", { ascending: true });
 
     if (error) console.error(error);
     else setShopItems(data);
@@ -27,27 +27,27 @@ export default function ShopModal({ userId, onClose }) {
       memo: `Purchase: ${item.items.name}`,
       metadata: { item_id: item.items.id },
       onReadyForServerApproval: async (paymentId) => {
-        await fetch('/payment/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("/payment/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ paymentId }),
         });
       },
       onReadyForServerCompletion: async (paymentId, txid) => {
-        await fetch('/payment/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("/payment/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ paymentId, txid }),
         });
         alert(`✅ Purchased ${item.items.name} with Pi!`);
       },
       onCancel(paymentId) {
-        console.log('Cancelled', paymentId);
+        console.log("Cancelled", paymentId);
       },
       onError(error, paymentId) {
-        console.error('Payment error', error, paymentId);
-        alert('❌ Payment failed');
-      }
+        console.error("Payment error", error, paymentId);
+        alert("❌ Payment failed");
+      },
     });
   };
 
@@ -59,7 +59,9 @@ export default function ShopModal({ userId, onClose }) {
     <div className="modal-backdrop">
       <div className="modal-content shop-modal">
         <h2>🛒 Pi Shop</h2>
-        <button className="close-button" onClick={onClose}>X</button>
+        <button className="close-button" onClick={onClose}>
+          X
+        </button>
         {loading ? (
           <p>Loading...</p>
         ) : (

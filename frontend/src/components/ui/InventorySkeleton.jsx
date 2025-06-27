@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const InventorySkeleton = () => (
   <ul className="space-y-4 animate-pulse">

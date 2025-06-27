@@ -14,8 +14,8 @@
   --text-epic: #c678dd;
   --text-legendary: #ffd700;
   --stat-color: #c0c0ff;
-  --item-card-shadow: 0 0 8px rgba(255,255,255,0.1);
-  --item-card-shadow-hover: 0 0 12px rgba(255,255,255,0.3);
+  --item-card-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+  --item-card-shadow-hover: 0 0 12px rgba(255, 255, 255, 0.3);
   --modal-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
   --hud-shadow: 0 0 20px #000;
   --transition-fast: 0.2s;
@@ -38,8 +38,9 @@
   background: transparent;
   outline: none;
 }
-.inventory-item:hover, .inventory-item:focus-visible {
-  background-color: rgba(255,255,255,0.1);
+.inventory-item:hover,
+.inventory-item:focus-visible {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Modal Styles */
@@ -80,7 +81,9 @@
   border: none;
   font-weight: bold;
   cursor: pointer;
-  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
   outline: none;
 }
 .modal-actions button:focus-visible {
@@ -91,21 +94,32 @@
 }
 
 /* Rarity Colors */
-.rarity-common { color: var(--text-muted); }
-.rarity-rare { color: var(--text-rare); }
-.rarity-epic { color: var(--text-epic); }
-.rarity-legendary { color: var(--text-legendary); }
+.rarity-common {
+  color: var(--text-muted);
+}
+.rarity-rare {
+  color: var(--text-rare);
+}
+.rarity-epic {
+  color: var(--text-epic);
+}
+.rarity-legendary {
+  color: var(--text-legendary);
+}
 
 /* Item Card */
 .item-card {
   border: 2px solid transparent;
   background: radial-gradient(circle, #111, #222);
   box-shadow: var(--item-card-shadow);
-  transition: transform var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+  transition:
+    transform var(--transition-fast) ease,
+    box-shadow var(--transition-fast) ease;
   border-radius: var(--border-radius-md);
   overflow: hidden;
 }
-.item-card:hover, .item-card:focus-visible {
+.item-card:hover,
+.item-card:focus-visible {
   transform: scale(1.05);
   box-shadow: var(--item-card-shadow-hover);
   outline: none;
@@ -128,7 +142,10 @@
   border-radius: var(--border-radius-md);
   text-align: center;
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   outline: none;
   display: flex;
   align-items: center;
@@ -140,7 +157,9 @@
   height: auto;
   display: block;
 }
-.hotbar-slot:hover, .hotbar-slot:focus-visible, .hotbar-slot.active {
+.hotbar-slot:hover,
+.hotbar-slot:focus-visible,
+.hotbar-slot.active {
   background: #333;
   border-color: var(--slot-border-hover);
   box-shadow: 0 0 6px var(--slot-border-hover);
@@ -161,7 +180,9 @@
   margin-bottom: 1.5rem;
 }
 
-.equipment-section, .stats-section, .hotbar-section {
+.equipment-section,
+.stats-section,
+.hotbar-section {
   flex: 1 1 200px;
   padding: var(--gap-md);
   border-right: 1px solid var(--slot-border);
@@ -203,7 +224,9 @@
     flex-direction: column;
     gap: var(--gap-md);
   }
-  .equipment-section, .stats-section, .hotbar-section {
+  .equipment-section,
+  .stats-section,
+  .hotbar-section {
     border-right: none;
     border-bottom: 1px solid var(--slot-border);
   }
@@ -213,14 +236,17 @@
 }
 
 @media (max-width: 600px) {
-  .modal-content, .vendor-modal {
+  .modal-content,
+  .vendor-modal {
     width: 98vw;
     padding: 1rem 0.5rem;
   }
   .player-hud-container {
     padding: var(--gap-sm);
   }
-  .equipment-section, .stats-section, .hotbar-section {
+  .equipment-section,
+  .stats-section,
+  .hotbar-section {
     padding: var(--gap-sm);
     min-width: 0;
   }
