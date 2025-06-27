@@ -2,53 +2,132 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Palace of Quests - Login using Pi Network for an immersive experience.">
-  <meta name="author" content="Your Name or Team">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Palace of Quests - Login securely using Pi Network for an immersive experience.">
+  <meta name="author" content="Your Team">
   <title>Palace of Quests</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/favicon.ico">
+  <meta name="theme-color" content="#865DFF">
+      <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <script>
   Pi.init({ version: "2.0", sandbox: true }); // use sandbox:false for mainnet
 </script>
   <style>
     :root {
       --primary-color: #865DFF;
+      --primary-dark: #6b48c8;
       --secondary-color: #222;
       --error-color: #b00020;
       --font-family: system-ui, sans-serif;
     }
-    body { font-family: var(--font-family); background: #fafafa; margin: 40px; }
-    #pi-login-btn { padding: 0.6em 1.2em; font-size: 1rem; border-radius: 5px; border: none; background: var(--primary-color); color: #fff; cursor: pointer; transition: background 0.3s; }
-    #pi-login-btn:hover { background: #6b48c8; }
-    #pi-login-btn[disabled] { opacity: 0.6; cursor: not-allowed; }
-    #login-status { margin-top: 16px; color: var(--secondary-color); font-weight: 500; min-height: 24px; transition: color 0.2s; }
-    #login-status.error { color: var(--error-color); }
-    #spinner { display: none; margin-top: 16px; }
+    body {
+      font-family: var(--font-family);
+      background: #fafafa;
+      margin: 40px;
+      color: var(--secondary-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #pi-login-btn {
+      padding: 0.75em 1.5em;
+      font-size: 1.05rem;
+      border-radius: 6px;
+      border: none;
+      background: var(--primary-color);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(134, 93, 255, .08);
+    }
+    #pi-login-btn:focus-visible {
+      outline: 2px solid var(--primary-dark);
+      outline-offset: 2px;
+    }
+    #pi-login-btn:hover:not([disabled]) {
+      background: var(--primary-dark);
+    }
+    #pi-login-btn[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    #login-status {
+      margin-top: 18px;
+      font-weight: 500;
+      min-height: 24px;
+      transition: color 0.2s;
+    }
+    #login-status.error {
+      color: var(--error-color);
+    }
+    #spinner {
+      margin-top: 18px;
+      display: none;
+    }
+    @media (max-width: 480px) {
+      body { margin: 12vw; }
+      #pi-login-btn { width: 100%; }
+    }
   </style>
 </head>
 <body>
-  <button id="pi-login-btn" aria-label="Login with Pi Network">Login with Pi Network</button>
-  <div id="login-status"></div>
-  <div id="spinner">Loading...</div>
-
+  <main aria-label="Login Section">
+    <button id="pi-login-btn" aria-label="Login with Pi Network" autocomplete="off">
+      Login with Pi Network
+    </button>
+    <div id="spinner" role="status" aria-live="polite" aria-hidden="true">Loading…</div>
+    <div id="login-status" role="alert"></div>
+  </main>
   <script>
-    const PI_CLIENT_ID = "YOUR_CLIENT_ID"; // Replace with dynamic value
-    const PI_NETWORK = "testnet"; // Use environment variable for production
+    // --- Pi Network App Config ---
+    // Use environment variables or secure server-side injection for sensitive config in production
+    const PI_CLIENT_ID = window.PI_CLIENT_ID || "YOUR_CLIENT_ID"; // Set via env or backend template
+    const PI_NETWORK = window.PI_NETWORK || "testnet"; // Set to "mainnet" in production
 
+    // --- DOM References ---
     const loginBtn = document.getElementById("pi-login-btn");
     const statusMsg = document.getElementById("login-status");
     const spinner = document.getElementById("spinner");
 
+    // --- Helper Functions ---
+    function setStatus(message, isError = false) {
+      statusMsg.textContent = message;
+      statusMsg.className = isError ? "error" : "";
+      if (isError) spinner.style.display = "none";
+    }
+    function showSpinner(show = true) {
+      spinner.style.display = show ? "block" : "none";
+    }
+    function setBtnState(disabled) {
+      loginBtn.disabled = disabled;
+      if (disabled) loginBtn.setAttribute("aria-disabled", "true");
+      else loginBtn.removeAttribute("aria-disabled");
+    }
+
+    // --- Pi Login Logic ---
     async function loginWithPi() {
-      setStatus("Connecting to Pi Network…", false);
-      loginBtn.disabled = true;
-      spinner.style.display = "block";
+      setStatus("Connecting to Pi Network…");
+      setBtnState(true);
+      showSpinner(true);
 
       try {
-        const { account } = await Pi.initializer({ clientId: PI_CLIENT_ID, network: PI_NETWORK });
+        if (!window.Pi) throw new Error("Pi SDK failed to load.");
+        // Initialize Pi SDK only if not already initialized
+        if (!window._piInitialized) {
+          Pi.init({ version: "2.0", sandbox: PI_NETWORK === "testnet" });
+          window._piInitialized = true;
+        }
+        const { account } = await Pi.initializer({
+          clientId: PI_CLIENT_ID,
+          network: PI_NETWORK
+        });
         const authResponse = await account.requestAuth({
           app: { name: "Palace of Quests" },
-          permissions: ["testnet_access"],
+          permissions: [PI_NETWORK === "testnet" ? "testnet_access" : "mainnet_access"]
         });
 
         if (authResponse.status === "success" && authResponse.account) {
@@ -58,10 +137,10 @@
           throw new Error(authResponse.error || "Login failed. Please try again.");
         }
       } catch (err) {
-        setStatus(err.message || "Unexpected error during login.", true);
+        setStatus(err?.message || "Unexpected error during login.", true);
       } finally {
-        loginBtn.disabled = false;
-        spinner.style.display = "none";
+        setBtnState(false);
+        showSpinner(false);
       }
     }
 
@@ -72,26 +151,25 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ access_token: accessToken }),
         });
-
         if (!res.ok) {
           const err = await res.text();
           throw new Error("Backend rejected login: " + err);
         }
-
         const data = await res.json();
-        setStatus(`Welcome, ${data.username}!`);
+        setStatus(`Welcome, ${data.username || "user"}!`);
       } catch (err) {
-        setStatus("Network error: " + err.message, true);
+        setStatus("Network error: " + (err?.message || err), true);
       }
     }
 
-    function setStatus(message, isError = false) {
-      statusMsg.textContent = message;
-      statusMsg.className = isError ? "error" : "";
-      spinner.style.display = isError ? "none" : "block";
-    }
-
+    // --- Event Binding ---
     loginBtn.addEventListener("click", loginWithPi);
+    loginBtn.addEventListener("keyup", e => {
+      if (e.key === "Enter" || e.key === " ") loginWithPi();
+    });
+
+    // Optional: Autofocus for a11y
+    window.addEventListener("DOMContentLoaded", () => loginBtn.focus());
   </script>
 </body>
 </html>
