@@ -20,6 +20,20 @@ payload={{
   }
 }}
 
+  if (quest.requires_pi) {
+  // Show Pay with Pi modal
+  <PiPaymentModal
+    userId={piUser.uid}
+    payload={{
+      amount: 2,
+      memo: `Unlock ${quest.title}`,
+      metadata: { type: 'quest_unlock', quest_id: quest.id },
+      onSuccess: () => startQuest(quest.id)
+    }}
+  />
+}
+
+
     const { amount, memo, metadata, onSuccess } = payload;
 
     try {
