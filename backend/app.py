@@ -13,26 +13,38 @@ from marshmallow import Schema, fields, ValidationError
 load_dotenv()
 
 REQUIRED_ENV_VARS = ["PI_API_KEY", "SUPABASE_URL", "SUPABASE_KEY"]
-missing_vars = [v for v in REQUIRED_ENV_VARS if not os.getenv(v)]
+missing_vars = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
 if missing_vars:
     raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
-PI_API_KEY = os.getenv("PI_API_KEY")
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+PI_API_KEY = os.environ["PI_API_KEY"]
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 
 # --- Logging ---
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+)
 logger = logging.getLogger("palaceofquests.backend")
 
 # --- Flask App ---
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://your-frontend-domain.com", "http://localhost:3000"]}})  # Adjust as needed
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
+CORS(
+    app,
+    resources={r"/api/*": {"origins": [
+        "https://your-frontend-domain.com",
+        "http://localhost:3000"
+    ]}},
+    supports_credentials=True
+)
 
 # --- HTTP Session with Retries ---
-SESSION = requests.Session()
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+SESSION = requests.Session()
 retry_strategy = Retry(
     total=3,
     status_forcelist=[429, 500, 502, 503, 504],
@@ -41,10 +53,14 @@ retry_strategy = Retry(
 adapter = HTTPAdapter(max_retries=retry_strategy)
 SESSION.mount("https://", adapter)
 SESSION.mount("http://", adapter)
+DEFAULT_TIMEOUT = 5  # seconds
 
 # --- Utils ---
 def get_pi_headers() -> Dict[str, str]:
-    return {"Authorization": f"Key {PI_API_KEY}", "Content-Type": "application/json"}
+    return {
+        "Authorization": f"Key {PI_API_KEY}",
+        "Content-Type": "application/json"
+    }
 
 def get_supabase_headers() -> Dict[str, str]:
     return {
@@ -53,11 +69,11 @@ def get_supabase_headers() -> Dict[str, str]:
         "Content-Type": "application/json"
     }
 
-def handle_upstream_error(e: Exception, api: str):
-    logger.error(f"{api} failed: {str(e)}")
-    response = getattr(e, 'response', None)
-    if response is not None:
-        logger.error(f"Upstream response: {response.text}")
+def handle_upstream_error(err: Exception, api: str):
+    logger.error(f"{api} failed: {err}")
+    resp = getattr(err, 'response', None)
+    if resp is not None:
+        logger.error(f"Upstream response: {resp.text}")
     abort(502, description=f"Upstream {api} API error")
 
 def json_error(message: str, status_code: int = 400):
@@ -65,7 +81,7 @@ def json_error(message: str, status_code: int = 400):
     response.status_code = status_code
     return response
 
-# --- Schemas ---
+# --- Schemas (Singletons for efficiency) ---
 class PaymentCreateSchema(Schema):
     uid = fields.String(required=True)
     amount = fields.Float(required=True)
@@ -76,18 +92,18 @@ class PaymentActionSchema(Schema):
     paymentId = fields.String(required=True)
     txid = fields.String(required=False)
 
-# --- Routes ---
+payment_create_schema = PaymentCreateSchema()
+payment_action_schema = PaymentActionSchema()
 
+# --- Routes ---
 @app.route("/", methods=["GET"])
 def health() -> Any:
-    """Health check."""
     return jsonify({"status": "Backend running"})
 
-@app.route('/payment/create', methods=['POST'])
+@app.route("/payment/create", methods=["POST"])
 def create_payment() -> Any:
-    """Create a new Pi payment."""
     try:
-        data = PaymentCreateSchema().load(request.get_json(force=True))
+        data = payment_create_schema.load(request.get_json())
     except ValidationError as err:
         return json_error(err.messages, 400)
 
@@ -97,103 +113,59 @@ def create_payment() -> Any:
         "memo": data["memo"],
         "metadata": data.get("metadata", {}),
         "uid": data["uid"],
-        "payment_id": payment_id
+        "payment_id": payment_id,
     }
     try:
         resp = SESSION.post(
-            "https://api.minepi.com/v2/payments",
+            f"https://api.minepi.com/v2/payments",
             headers=get_pi_headers(),
             json=payload,
-            timeout=10
+            timeout=DEFAULT_TIMEOUT
         )
         resp.raise_for_status()
-        logger.info(f"Payment created: {payment_id} for user {data['uid']}")
-        return jsonify(resp.json())
-    except requests.RequestException as e:
-        handle_upstream_error(e, "Pi Network")
-
-@app.route("/payment/approve", methods=["POST"])
-def approve_payment() -> Any:
-    """Approve a Pi payment."""
-    try:
-        data = PaymentActionSchema().load(request.get_json(force=True), partial=("txid",))
-    except ValidationError as err:
-        return json_error(err.messages, 400)
-
-    payment_id = data["paymentId"]
-    try:
-        resp = SESSION.post(
-            f"https://api.minepi.com/v2/payments/{payment_id}/approve",
-            headers=get_pi_headers(),
-            timeout=10
-        )
-        resp.raise_for_status()
-        logger.info(f"Payment approved: {payment_id}")
-        return jsonify(resp.json())
-    except requests.RequestException as e:
-        handle_upstream_error(e, "Pi Network")
+        pi_response = resp.json()
+    except Exception as err:
+        handle_upstream_error(err, "Pi Network")
+    return jsonify({"payment_id": payment_id, "pi_response": pi_response})
 
 @app.route("/payment/complete", methods=["POST"])
 def complete_payment() -> Any:
-    """Complete a Pi payment."""
     try:
-        data = PaymentActionSchema().load(request.get_json(force=True))
+        data = payment_action_schema.load(request.get_json())
     except ValidationError as err:
         return json_error(err.messages, 400)
-
-    payment_id = data["paymentId"]
-    txid = data.get("txid")
-    if not txid:
-        return json_error("Missing txid", 400)
     try:
         resp = SESSION.post(
-            f"https://api.minepi.com/v2/payments/{payment_id}/complete",
+            f"https://api.minepi.com/v2/payments/{data['paymentId']}/complete",
             headers=get_pi_headers(),
-            json={"txid": txid},
-            timeout=10
+            json={"txid": data.get("txid")},
+            timeout=DEFAULT_TIMEOUT
         )
         resp.raise_for_status()
-        logger.info(f"Payment completed: {payment_id} txid={txid}")
-        return jsonify(resp.json())
-    except requests.RequestException as e:
-        handle_upstream_error(e, "Pi Network")
+        pi_response = resp.json()
+    except Exception as err:
+        handle_upstream_error(err, "Pi Network")
+    return jsonify(pi_response)
 
-@app.route('/fuse-items', methods=['POST'])
-def fuse_items():
-    data = request.json
-    user_id = data.get('user_id')
-    item_ids = data.get('item_ids')
-
-    if not user_id or not item_ids or not isinstance(item_ids, list):
-        return jsonify({'error': 'Missing or invalid payload'}), 400
-
-    # 1. Remove existing items (simulate burn)
-    for item_id in item_ids:
-        requests.delete(
-            f"{SUPABASE_URL}/rest/v1/inventory?id=eq.{item_id}",
-            headers=get_supabase_headers()
+@app.route("/payment/cancel", methods=["POST"])
+def cancel_payment() -> Any:
+    try:
+        data = payment_action_schema.load(request.get_json())
+    except ValidationError as err:
+        return json_error(err.messages, 400)
+    try:
+        resp = SESSION.post(
+            f"https://api.minepi.com/v2/payments/{data['paymentId']}/cancel",
+            headers=get_pi_headers(),
+            timeout=DEFAULT_TIMEOUT
         )
+        resp.raise_for_status()
+        pi_response = resp.json()
+    except Exception as err:
+        handle_upstream_error(err, "Pi Network")
+    return jsonify(pi_response)
 
-    # 2. Define fusion result (example logic)
-    fused_item = {
-        "item_name": "Omega Blade",
-        "rarity": "legendary"
-    }
-
-    # 3. Add fused item to inventory
-    r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/inventory",
-        headers=get_supabase_headers(),
-        json={
-            "user_id": user_id,
-            "item_name": fused_item["item_name"],
-            "realm_id": "fusion_lab"
-        }
-    )
-
-    return jsonify({"result": fused_item})
-
-
-# --- Main Entry ---
+# --- Entry point ---
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    # Only for development; use Gunicorn or similar in production
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=False)
