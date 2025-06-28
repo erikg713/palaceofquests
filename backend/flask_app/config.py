@@ -1,5 +1,24 @@
 import os
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load from .env
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
+class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret")
+    PI_API_KEY = os.getenv("PI_API_KEY")
+    PI_WALLET_PRIVATE_SEED = os.getenv("PI_WALLET_PRIVATE_SEED")
+    PI_NETWORK = os.getenv("PI_NETWORK", "Pi Testnet")
+
+class DevConfig(Config):
+    DEBUG = True
+
+class ProdConfig(Config):
+    DEBUG = False
 
 # Project root directory
 BASE_DIR = Path(__file__).resolve().parent.parent
