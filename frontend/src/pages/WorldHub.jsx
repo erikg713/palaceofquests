@@ -1,3 +1,16 @@
+import { usePlayer } from '../context/PlayerContext';
+
+export default function WorldHub() {
+  const { player } = usePlayer();
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Welcome, {player.username}!</h1>
+      <p>Level: {player.level}</p>
+    </div>
+  );
+}
+
+
 import React, { useState, useContext, useCallback } from 'react';
 import { PiWalletContext } from '../context/PiWalletContext';
 import PiPaymentModal from '../components/PiPaymentModal';
