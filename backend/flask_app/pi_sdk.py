@@ -1,6 +1,17 @@
 # pi_sdk.py
 import requests
 import os
+from flask import current_app
+from pi_network_sdk import PiNetwork
+
+def initialize_pi_sdk():
+    pi = PiNetwork()
+    pi.initialize(
+        current_app.config["PI_API_KEY"],
+        current_app.config["PI_WALLET_PRIVATE_SEED"],
+        current_app.config["PI_NETWORK"]
+    )
+    return pi
 
 PI_API_KEY = os.getenv("PI_API_KEY")
 
