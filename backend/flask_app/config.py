@@ -54,16 +54,10 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     SESSION_COOKIE_SECURE = False
-
-
-class ProductionConfig(Config):
-    ENV = 'production'
-    DEBUG = False
-
+    
 
 # Dictionary mapping for app factory
 config_by_name = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
-    'production': ProductionConfig
 }
