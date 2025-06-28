@@ -224,7 +224,7 @@ function initPiLogin() {
 }
 
 // Export for potential module usage
-if (typeof module !== "undefined" && module.exports) {
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
   module.exports = {
     loginWithPi,
     initPiLogin,
