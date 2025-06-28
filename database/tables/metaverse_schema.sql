@@ -110,7 +110,8 @@ CREATE INDEX IF NOT EXISTS idx_currency_history_avatar_id ON metaverse_schema.cu
 -- Optional: Comments for better maintainability
 COMMENT ON TABLE metaverse_schema.users IS 'Stores registered users.';
 COMMENT ON COLUMN metaverse_schema.users.wallet_address IS 'Blockchain wallet address, if provided.';
-
+COMMENT ON TABLE metaverse_schema.avatars IS 'Stores avatars for users, including equipped items and currency.';
+COMMENT ON COLUMN metaverse_schema.avatars.equipped_weapon_id IS 'Foreign key to weapons table. Represents the weapon the avatar is currently using.';
 -- Seed Data: Use explicit columns and be ready for changes
 INSERT INTO metaverse_schema.levels (level_number, experience_required) VALUES
     (1, 0),
