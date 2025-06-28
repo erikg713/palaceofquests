@@ -1,0 +1,11 @@
+[project]
+name = "palace-of-quests"
+id = "your-project-ref-id"  # Replace with actual Supabase project ref from dashboard
+
+[api]
+port = 54321
+schemas = ["public", "auth"]
+
+[db]
+port = 54322
+shadow_port = 54320
