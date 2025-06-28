@@ -1,21 +1,16 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Dict, Any
+from functools import wraps
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Response, HTTPException, Depends, Cookie, status
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from supabase import create_client, Client
+from flask import Flask, request, jsonify, make_response, abort, Blueprint
 from jose import jwt, JWTError
 import httpx
+from supabase import create_client
+import logging
 
-from app.routes import players, quests
-from app.api import auth, users
-
-# === Configuration ===
+# === Load configuration from environment ===
 load_dotenv()
-
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev_secret_change_me")
@@ -26,83 +21,87 @@ JWT_EXP_MINUTES = 60 * 24 * 7  # 7 days
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("Supabase configuration is missing. Please check your environment variables.")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# === FastAPI App Initialization ===
-app = FastAPI(
-    title="Palace of Quests API",
-    description="API for Palace of Quests game backend.",
-    version="1.0.0"
-)
+# === Flask App Initialization ===
+app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 
-# === Routers ===
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(players.router, prefix="/api/players", tags=["Players"])
-app.include_router(quests.router, prefix="/api/quests", tags=["Quests"])
-
-# === Models ===
-class PiLoginRequest(BaseModel):
-    access_token: str
+# === Logging ===
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # === Utility Functions ===
-def create_session_token(user: Dict[str, Any]) -> str:
+
+def create_session_token(user):
     """Create a JWT session token for a user."""
     expire = datetime.now(timezone.utc) + timedelta(minutes=JWT_EXP_MINUTES)
     payload = {
         "sub": user["username"],
         "user": user,
-        "exp": int(expire.timestamp())
+        "exp": int(expire.timestamp()),
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-def decode_session_token(token: str) -> Optional[Dict[str, Any]]:
+def decode_session_token(token):
     """Decode a JWT session token."""
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return payload.get("user")
-    except JWTError:
+    except JWTError as e:
+        logger.warning(f"Token decode failed: {e}")
         return None
 
-def get_token_from_cookie(session_token: Optional[str] = Cookie(None)) -> Optional[str]:
+def get_token_from_cookie():
     """Retrieve session token from cookie."""
-    return session_token
+    return request.cookies.get("session_token")
 
-# === Auth Dependency ===
-def require_login(token: Optional[str] = Depends(get_token_from_cookie)) -> Dict[str, Any]:
-    """Dependency to ensure user is authenticated."""
-    user = decode_session_token(token) if token else None
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
-        )
-    return user
+def login_required(f):
+    """Decorator to ensure user is authenticated via session token."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = get_token_from_cookie()
+        user = decode_session_token(token) if token else None
+        if not user:
+            return jsonify({"detail": "Not authenticated"}), 401
+        return f(user, *args, **kwargs)
+    return decorated_function
 
-# === Endpoints ===
-@app.get("/", tags=["Root"])
-async def index():
+# === Routes ===
+
+@app.route("/", methods=["GET"])
+def index():
     """Root endpoint for health check."""
-    return {"message": "Welcome to Palace of Quests"}
+    return jsonify({"message": "Welcome to Palace of Quests"})
 
-@app.post("/api/pi-login", tags=["Authentication"])
-async def pi_login(data: PiLoginRequest, response: Response):
+@app.route("/api/pi-login", methods=["POST"])
+def pi_login():
     """
     Authenticate user with Pi Network and create/update user in Supabase.
     Sets a secure session token cookie on successful login.
     """
-    async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(
-            PI_VERIFICATION_URL,
-            headers={"Authorization": f"Bearer {data.access_token}"}
-        )
+    data = request.get_json()
+    access_token = data.get("access_token") if data else None
+    if not access_token:
+        return jsonify({"detail": "Missing access_token"}), 400
 
-    if resp.status_code != status.HTTP_200_OK:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Pi token")
+    try:
+        with httpx.Client(timeout=10) as client:
+            resp = client.get(
+                PI_VERIFICATION_URL,
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+    except httpx.RequestError as exc:
+        logger.error(f"Pi API error: {exc}")
+        return jsonify({"detail": "Failed to reach Pi Network API"}), 502
+
+    if resp.status_code != 200:
+        return jsonify({"detail": "Invalid Pi token"}), 401
+
     pi_user = resp.json()
     username = pi_user.get("username")
     if not username:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username not found in Pi response")
+        return jsonify({"detail": "Username not found in Pi response"}), 400
 
     user_data = {
         "username": username,
@@ -110,38 +109,48 @@ async def pi_login(data: PiLoginRequest, response: Response):
         "profile": pi_user,
         "last_login": datetime.now(timezone.utc).isoformat()
     }
-    # Upsert user record in Supabase
-    supabase.table("users").upsert(user_data, on_conflict=["username"]).execute()
+
+    try:
+        supabase.table("users").upsert(user_data, on_conflict=["username"]).execute()
+    except Exception as e:
+        logger.error(f"Supabase upsert failed: {e}")
+        return jsonify({"detail": "Database error"}), 500
 
     session_token = create_session_token(user_data)
-    response.set_cookie(
-        key="session_token",
+    resp = make_response(jsonify({"user": {"username": username}}))
+    resp.set_cookie(
+        "session_token",
         value=session_token,
         httponly=True,
         secure=True,
-        samesite="lax",
+        samesite="Lax",
         max_age=60 * 60 * 24 * 7
     )
-    return {"user": {"username": username}}
+    return resp
 
-@app.get("/api/session", tags=["Authentication"])
-async def get_session(token: Optional[str] = Depends(get_token_from_cookie)):
-    """
-    Retrieve the current user's session from the session token cookie.
-    """
-    if not token:
-        return JSONResponse({"user": None})
-    user = decode_session_token(token)
+@app.route("/api/session", methods=["GET"])
+def get_session():
+    """Retrieve the current user's session from the session token cookie."""
+    token = get_token_from_cookie()
+    user = decode_session_token(token) if token else None
     if not user:
-        return JSONResponse({"user": None})
-    return {"user": {"username": user["username"]}}
+        return jsonify({"user": None})
+    return jsonify({"user": {"username": user["username"]}})
 
-@app.post("/api/logout", tags=["Authentication"])
-async def logout(response: Response):
-    """
-    Log out the current user by deleting the session token cookie.
-    """
-    response.delete_cookie("session_token")
-    return {"message": "Logged out"}
+@app.route("/api/logout", methods=["POST"])
+def logout():
+    """Log out the current user by deleting the session token cookie."""
+    resp = make_response(jsonify({"message": "Logged out"}))
+    resp.delete_cookie("session_token")
+    return resp
+
+# === Register Blueprints for players and quests APIs if available ===
+try:
+    from app.routes.players import players_bp
+    from app.routes.quests import quests_bp
+    app.register_blueprint(players_bp, url_prefix="/api/players")
+    app.register_blueprint(quests_bp, url_prefix="/api/quests")
+except ImportError:
+    logger.info("Players and Quests blueprints not registered (modules missing).")
 
 # === End of File ===
