@@ -27,7 +27,10 @@ npm install react-unity-webgl
 npm install react-dnd react-dnd-html5-backend
 npm install three drei @react-three/fiber
 npm install three @react-three/fiber @react-three/drei
-
+npm create vite@latest frontend -- --template react-ts
+cd frontend
+npm install react-router-dom @supabase/supabase-js tailwindcss postcss autoprefixer
+npx tailwindcss init -p
 # Start the development server
 npm run dev
 ```
