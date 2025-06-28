@@ -1,204 +1,195 @@
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-  async function startPiAuth() {
-    try {
-      const scopes = ['username'];
-      const result = await Pi.authenticate(scopes, onIncompletePaymentFound);
-      window.userSession = result;
-      UnityInstance.SendMessage('PiAuthBridge', 'OnPiAuthSuccess', JSON.stringify(result));
-    } catch (error) {
-      UnityInstance.SendMessage('PiAuthBridge', 'OnPiAuthError', error.toString());
-    }
-  }
-
-  function onIncompletePaymentFound(payment) {
-    console.warn("Handle incomplete payment", payment);
-  }
-
-  window.onload = startPiAuth;
-</script>
-
-
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-  Pi.init({
-    version: "2.0",
-    sandbox: true
-  });
-</script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Palace of Quests - Login securely using Pi Network for an immersive experience.">
-  <meta name="author" content="Your Team">
-  <title>Palace of Quests</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="/favicon.ico">
-  <meta name="theme-color" content="#865DFF">
-      <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-  Pi.init({ version: "2.0", sandbox: true }); // use sandbox:false for mainnet
-</script>
-  <style>
-    :root {
-      --primary-color: #865DFF;
-      --primary-dark: #6b48c8;
-      --secondary-color: #222;
-      --error-color: #b00020;
-      --font-family: system-ui, sans-serif;
-    }
-    body {
-      font-family: var(--font-family);
-      background: #fafafa;
-      margin: 40px;
-      color: var(--secondary-color);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    #pi-login-btn {
-      padding: 0.75em 1.5em;
-      font-size: 1.05rem;
-      border-radius: 6px;
-      border: none;
-      background: var(--primary-color);
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.2s;
-      font-weight: 600;
-      box-shadow: 0 2px 6px rgba(134, 93, 255, .08);
-    }
-    #pi-login-btn:focus-visible {
-      outline: 2px solid var(--primary-dark);
-      outline-offset: 2px;
-    }
-    #pi-login-btn:hover:not([disabled]) {
-      background: var(--primary-dark);
-    }
-    #pi-login-btn[disabled] {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    #login-status {
-      margin-top: 18px;
-      font-weight: 500;
-      min-height: 24px;
-      transition: color 0.2s;
-    }
-    #login-status.error {
-      color: var(--error-color);
-    }
-    #spinner {
-      margin-top: 18px;
-      display: none;
-    }
-    @media (max-width: 480px) {
-      body { margin: 12vw; }
-      #pi-login-btn { width: 100%; }
-    }
-  </style>
-</head>
-<body>
-  <main aria-label="Login Section">
-    <button id="pi-login-btn" aria-label="Login with Pi Network" autocomplete="off">
-      Login with Pi Network
-    </button>
-    <div id="spinner" role="status" aria-live="polite" aria-hidden="true">Loading…</div>
-    <div id="login-status" role="alert"></div>
-  </main>
-  <script>
-    // --- Pi Network App Config ---
-    // Use environment variables or secure server-side injection for sensitive config in production
-    const PI_CLIENT_ID = window.PI_CLIENT_ID || "YOUR_CLIENT_ID"; // Set via env or backend template
-    const PI_NETWORK = window.PI_NETWORK || "testnet"; // Set to "mainnet" in production
+  <head>
+    <!-- Character encoding and viewport -->
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    // --- DOM References ---
-    const loginBtn = document.getElementById("pi-login-btn");
-    const statusMsg = document.getElementById("login-status");
-    const spinner = document.getElementById("spinner");
+    <!-- Primary Meta Tags -->
+    <title>Palace of Quests - Pi Network Login</title>
+    <meta name="title" content="Palace of Quests - Pi Network Login" />
+    <meta
+      name="description"
+      content="Enter the Palace of Quests, an immersive blockchain-powered adventure platform. Login securely using Pi Network for exclusive access to quests, rewards, and epic adventures."
+    />
+    <meta
+      name="keywords"
+      content="Pi Network, blockchain games, quests, adventure, dApp, web3, gaming, Palace of Quests"
+    />
+    <meta name="author" content="Palace of Quests Team" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
 
-    // --- Helper Functions ---
-    function setStatus(message, isError = false) {
-      statusMsg.textContent = message;
-      statusMsg.className = isError ? "error" : "";
-      if (isError) spinner.style.display = "none";
-    }
-    function showSpinner(show = true) {
-      spinner.style.display = show ? "block" : "none";
-    }
-    function setBtnState(disabled) {
-      loginBtn.disabled = disabled;
-      if (disabled) loginBtn.setAttribute("aria-disabled", "true");
-      else loginBtn.removeAttribute("aria-disabled");
-    }
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://palaceofquests.com/" />
+    <meta
+      property="og:title"
+      content="Palace of Quests - Pi Network Adventure Platform"
+    />
+    <meta
+      property="og:description"
+      content="Enter the Palace of Quests, an immersive blockchain-powered adventure platform. Login securely using Pi Network for exclusive access to quests, rewards, and epic adventures."
+    />
+    <meta
+      property="og:image"
+      content="https://palaceofquests.com/images/og-image.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Palace of Quests" />
+    <meta property="og:locale" content="en_US" />
 
-    // --- Pi Login Logic ---
-    async function loginWithPi() {
-      setStatus("Connecting to Pi Network…");
-      setBtnState(true);
-      showSpinner(true);
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://palaceofquests.com/" />
+    <meta
+      property="twitter:title"
+      content="Palace of Quests - Pi Network Adventure Platform"
+    />
+    <meta
+      property="twitter:description"
+      content="Enter the Palace of Quests, an immersive blockchain-powered adventure platform. Login securely using Pi Network."
+    />
+    <meta
+      property="twitter:image"
+      content="https://palaceofquests.com/images/twitter-image.jpg"
+    />
+    <meta property="twitter:creator" content="@palaceofquests" />
 
-      try {
-        if (!window.Pi) throw new Error("Pi SDK failed to load.");
-        // Initialize Pi SDK only if not already initialized
-        if (!window._piInitialized) {
-          Pi.init({ version: "2.0", sandbox: PI_NETWORK === "testnet" });
-          window._piInitialized = true;
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://palaceofquests.com/" />
+
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#865DFF" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Palace of Quests" />
+    <meta name="msapplication-TileColor" content="#865DFF" />
+
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://sdk.minepi.com" crossorigin />
+    <link rel="dns-prefetch" href="https://sdk.minepi.com" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/login.css" />
+
+    <!-- Content Security Policy (Recommendation) -->
+    <!-- 
+  Uncomment and customize the following CSP header for production:
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://sdk.minepi.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.minepi.com;">
+  -->
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Palace of Quests",
+        "description": "An immersive blockchain-powered adventure platform on Pi Network",
+        "url": "https://palaceofquests.com",
+        "applicationCategory": "Game",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "creator": {
+          "@type": "Organization",
+          "name": "Palace of Quests Team"
         }
-        const { account } = await Pi.initializer({
-          clientId: PI_CLIENT_ID,
-          network: PI_NETWORK
-        });
-        const authResponse = await account.requestAuth({
-          app: { name: "Palace of Quests" },
-          permissions: [PI_NETWORK === "testnet" ? "testnet_access" : "mainnet_access"]
-        });
-
-        if (authResponse.status === "success" && authResponse.account) {
-          setStatus(`Logged in as: ${authResponse.account.username}`);
-          await sendLoginToBackend(authResponse.accessToken);
-        } else {
-          throw new Error(authResponse.error || "Login failed. Please try again.");
-        }
-      } catch (err) {
-        setStatus(err?.message || "Unexpected error during login.", true);
-      } finally {
-        setBtnState(false);
-        showSpinner(false);
       }
-    }
+    </script>
 
-    async function sendLoginToBackend(accessToken) {
-      try {
-        const res = await fetch("/api/pi-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ access_token: accessToken }),
+    <!-- Pi Network SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js" defer crossorigin></script>
+  </head>
+
+  <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="sr-only">Skip to main content</a>
+
+    <!-- Main content -->
+    <main id="main-content" role="main" aria-labelledby="page-title">
+      <h1 id="page-title" class="sr-only">Palace of Quests Login</h1>
+
+      <section aria-labelledby="login-section-title">
+        <h2 id="login-section-title" class="sr-only">
+          Pi Network Authentication
+        </h2>
+
+        <button
+          id="pi-login-btn"
+          type="button"
+          aria-describedby="login-description"
+          aria-label="Login with Pi Network to access Palace of Quests"
+        >
+          Login with Pi Network
+        </button>
+
+        <p id="login-description" class="sr-only">
+          Click to authenticate with Pi Network and gain access to Palace of
+          Quests platform
+        </p>
+
+        <div
+          id="spinner"
+          role="status"
+          aria-live="polite"
+          aria-hidden="true"
+          aria-label="Loading"
+        >
+          <span class="sr-only">Loading...</span>
+          Loading…
+        </div>
+
+        <div
+          id="login-status"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        ></div>
+      </section>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+      // Configuration management
+      window.PI_CLIENT_ID = window.PI_CLIENT_ID || "YOUR_CLIENT_ID";
+      window.PI_NETWORK = window.PI_NETWORK || "testnet";
+    </script>
+    <script src="/pi-login.js" defer></script>
+
+    <!-- Analytics and monitoring (placeholder) -->
+    <!-- Add your analytics tracking code here -->
+
+    <!-- Service Worker registration for PWA (optional) -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then(function (registration) {
+              console.log("ServiceWorker registration successful");
+            })
+            .catch(function (error) {
+              console.log("ServiceWorker registration failed");
+            });
         });
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error("Backend rejected login: " + err);
-        }
-        const data = await res.json();
-        setStatus(`Welcome, ${data.username || "user"}!`);
-      } catch (err) {
-        setStatus("Network error: " + (err?.message || err), true);
       }
-    }
-
-    // --- Event Binding ---
-    loginBtn.addEventListener("click", loginWithPi);
-    loginBtn.addEventListener("keyup", e => {
-      if (e.key === "Enter" || e.key === " ") loginWithPi();
-    });
-
-    // Optional: Autofocus for a11y
-    window.addEventListener("DOMContentLoaded", () => loginBtn.focus());
-  </script>
-</body>
+    </script>
+  </body>
 </html>
