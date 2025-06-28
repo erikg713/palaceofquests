@@ -1,3 +1,25 @@
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+<script>
+  async function startPiAuth() {
+    try {
+      const scopes = ['username'];
+      const result = await Pi.authenticate(scopes, onIncompletePaymentFound);
+      window.userSession = result;
+      UnityInstance.SendMessage('PiAuthBridge', 'OnPiAuthSuccess', JSON.stringify(result));
+    } catch (error) {
+      UnityInstance.SendMessage('PiAuthBridge', 'OnPiAuthError', error.toString());
+    }
+  }
+
+  function onIncompletePaymentFound(payment) {
+    console.warn("Handle incomplete payment", payment);
+  }
+
+  window.onload = startPiAuth;
+</script>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
