@@ -62,3 +62,29 @@ const App = () => {
 };
 
 export default App;
+
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import WorldHub from './pages/WorldHub';
+import Inventory from './pages/Inventory';
+import QuestBoard from './pages/QuestBoard';
+import Marketplace from './pages/Marketplace';
+import Navbar from './components/Navbar';
+import { PlayerProvider } from './context/PlayerContext';
+
+function App() {
+  return (
+    <PlayerProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<WorldHub />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/quests" element={<QuestBoard />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+        </Routes>
+      </BrowserRouter>
+    </PlayerProvider>
+  );
+}
+
+export default App;
