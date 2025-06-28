@@ -28,3 +28,13 @@ VALUES
     ('33333333-3333-3333-3333-333333333331', '00000000-0000-0000-0000-000000000001', 'Sword', 'gear', 1),
     ('33333333-3333-3333-3333-333333333332', '00000000-0000-0000-0000-000000000001', 'Potion', 'consumable', 5)
 ON CONFLICT (id) DO NOTHING;
+
+-- Sample players
+insert into public.players (pi_uid, username) values
+  ('00000000-0000-0000-0000-000000000001', 'PiWarrior'),
+  ('00000000-0000-0000-0000-000000000002', 'MageOfPi');
+
+-- Sample quests
+insert into public.quests (title, description, reward_pi, reward_items, required_level) values
+  ('Defend the Realm', 'Defend the Palace from invading orcs.', 50, '[{"item_name": "Iron Sword", "rarity": "common"}]', 1),
+  ('Retrieve the Amulet', 'Recover the stolen amulet from the dark forest.', 100, '[{"item_name": "Mystic Amulet", "rarity": "rare"}]', 3);
