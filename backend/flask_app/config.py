@@ -1,58 +1,56 @@
+"""
+Configurations for Flask application.
+BaseConfig: Default settings.
+DevelopmentConfig: Overrides for development.
+TestingConfig: Overrides for testing.
+ProductionConfig: Overrides for production.
+"""
+
 import os
-from pathlib import Path
 from dotenv import load_dotenv
-import logging
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
-
-# Set up logging
-logging.basicConfig(level=logging.DEBUG if os.getenv('FLASK_ENV') == 'development' else logging.INFO)
-
-# Base directory
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Load environment variables from a .env file if present
+env_path = Path(__file__).parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 class Config:
-    """Base configuration with sensible defaults."""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'change-this-in-production')
-    
-    # Supabase config
-    SUPABASE_URL = os.getenv('SUPABASE_URL')
-    SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-    SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
-    
-    # Security settings
-    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True').lower() == 'true'
-    REMEMBER_COOKIE_SECURE = os.getenv('REMEMBER_COOKIE_SECURE', 'True').lower() == 'true'
+    # General Config
+    SECRET_KEY = os.environ.get('SECRET_KEY', os.urandom(24))
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = 60 * 60 * 24  # 1 day in seconds
 
-class DevelopmentConfig(Config):
-    """Configuration for development environment."""
+    # Database
+     SUPABASE#
+
+    # Pi Network Integration
+    PI_API_KEY = os.environ.get('PI_API_KEY', '')
+    PI_API_URL = os.environ.get('PI_API_URL', 'https://api.minepi.com/v2/')
+
+    # Other Configurations
     DEBUG = True
-    ENV = 'development'
-
-class TestingConfig(Config):
-    """Configuration for testing environment."""
     TESTING = True
-    DEBUG = True
-    ENV = 'testing'
-    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URL', 'sqlite:///:memory:')
 
 class ProductionConfig(Config):
-    """Configuration for production environment."""
-    DEBUG = False
     ENV = 'production'
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR}/prod.db")
+    DEBUG = False
 
-config_by_name = {
-    'development': DevelopmentConfig,
-    'testing': TestingConfig,
-    'production': ProductionConfig
-}
+class DevelopmentConfig(Config):
+    ENV = 'development'
+    DEBUG = True
+    SESSION_COOKIE_SECURE = False  # For local testing
 
-def get_config(env=None):
-    """Get configuration class based on environment name."""
-    env = env or os.getenv('FLASK_ENV', 'development')
-    config = config_by_name.get(env.lower())
-    if not config:
-        raise ValueError(f"Invalid FLASK_ENV: {env}. Must be one of {list(config_by_name.keys())}.")
-    return config
+class TestingConfig(Config):
+    ENV = 'testing'
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SESSION_COOKIE_SECURE = False
+
+# Dictionary mapping for easy access
+config_by_name = dict(
+    development=DevelopmentConfig,
+    production=ProductionConfig,
+    testing=TestingConfig
+)
