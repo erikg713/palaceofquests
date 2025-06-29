@@ -1,9 +1,7 @@
 # --- Core API Framework and Server ---
-fastapi==0.95.2
 uvicorn==0.22.0
-
+axios
 # --- HTTP Clients ---
-httpx==0.24.0  # Modern async HTTP client, preferred with FastAPI
 requests==2.32.4  # Uncomment ONLY if you use requests in your codebase
 
 # --- Environment Variables ---
