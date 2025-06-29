@@ -1,3 +1,17 @@
+from pydantic import BaseSettings
+
+class Settings(BaseSettings):
+    SECRET_KEY: str
+    DATABASE_URL: str
+    JWT_SECRET_KEY: str
+    PI_API_KEY: str
+    PI_WALLET_PRIVATE_SEED: str
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+
 """
 Configurations for Flask application.
 BaseConfig: Default settings.
