@@ -8,8 +8,7 @@ services:
     restart: unless-stopped
     init: true
     ports:
-      - "4000:4000"  # FastAPI
-      - "5000:5000"  # Flask fallback
+      - "4000:4000"
     env_file:
       - ./backend/.env
     depends_on:
@@ -17,7 +16,7 @@ services:
     networks:
       - appnet
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -34,7 +33,7 @@ services:
     restart: unless-stopped
     init: true
     ports:
-      - "4173:4173"  # Vite preview server
+      - "4173:4173"
     env_file:
       - ./frontend/.env
     networks:
@@ -42,13 +41,13 @@ services:
     depends_on:
       - python-backend
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4173/status"]
+      test: ["CMD-SHELL", "curl -f http://localhost:4173/status || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   postgres-db:
-    image: postgres:latest
+    image: postgres:17.2
     container_name: postgres-db
     restart: unless-stopped
     environment:
@@ -57,9 +56,9 @@ services:
     secrets:
       - postgres_password
     ports:
-      - "5432:5432"
+      - "15432:5432"  # Use custom port
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/supabase/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -68,8 +67,8 @@ services:
     networks:
       - appnet
 
-networks:
-  appnet:
+networks: Pi-Network
+  appnet: testnet
     driver: bridge
 
 volumes:
@@ -81,22 +80,5 @@ volumes:
       device: /data/postgres
 
 secrets:
-  postgres_password:
+  postgres_password: Palace713
     file: ./secrets/postgres_password.txt
-  appnet:
-    driver: bridge
-
-volumes:
-  pgdata:
-    driver: local
-version: '3.9'
-
-services:
-  backend:
-    build: .
-    container_name: pi_backend
-    env_file:
-      - .env
-    ports:
-      - "5000:5000"
-    restart: unless-stopped
