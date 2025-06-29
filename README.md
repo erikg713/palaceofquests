@@ -171,3 +171,6 @@ For questions, feedback, or partnership requests:
 - Email: dev713@protonmail.com
 
 ---
+
+## TESTS ##
+pytest backend/routes/
