@@ -1,41 +1,32 @@
 # backend/routes/auth_routes.py
-
 from flask import Blueprint, request, jsonify
+import requests
+import jwt
+from app.models import db, User
+from app.config import settings
 
-auth_bp = Blueprint('auth', __name__)
+auth_bp = Blueprint("auth", __name__)
 
-# In-memory user store for demonstration
-users = {}
+@auth_bp.route("/pi-login", methods=["POST"])
+def pi_login():
+    data = request.json
+    access_token = data.get("accessToken")
+    user_uid = data.get("user").get("uid")
 
-@auth_bp.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    if not username or not password:
-        return jsonify({'error': 'Username and password required.'}), 400
-    if username in users:
-        return jsonify({'error': 'Username already exists.'}), 409
-    users[username] = password  # NOTE: Never store plaintext passwords in production
-    return jsonify({'message': f'User {username} registered.'}), 201
+    # Verify Pi token with Pi server
+    headers = {"Authorization": f"Bearer {access_token}"}
+    r = requests.get("https://api.minepi.com/me", headers=headers)
+    if r.status_code != 200 or r.json().get("uid") != user_uid:
+        return jsonify({"error": "Invalid Pi login"}), 401
 
-@auth_bp.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    if not username or not password:
-        return jsonify({'error': 'Username and password required.'}), 400
-    if users.get(username) != password:
-        return jsonify({'error': 'Invalid credentials.'}), 401
-    return jsonify({'message': f'Welcome, {username}!'}), 200
+    # Create user if doesn't exist
+    user = User.query.get(user_uid)
+    if not user:
+        user = User(id=user_uid, username=data["user"]["username"])
+        db.session.add(user)
+        db.session.commit()
 
-@auth_bp.route('/logout', methods=['POST'])
-def logout():
-    data = request.get_json()
-    username = data.get('username')
-    if not username:
-        return jsonify({'error': 'Username required.'}), 400
-    if username not in users:
-        return jsonify({'error': 'User not found.'}), 404
-    return jsonify({'message': f'User {username} logged out.'}), 200
+    # Create JWT token
+    token = jwt.encode({"user_id": user.id}, settings.JWT_SECRET_KEY, algorithm="HS256")
+    return jsonify({"token": token})
+
