@@ -2,6 +2,38 @@ import React, { useEffect, useState } from 'react';
 import MarketplaceItem from '../components/MarketplaceItem';
 import { supabase } from '../api/supabaseClient';
 import { buyMarketItem } from '../hooks/marketActions';
+import { Pi } from '@pi-apps/pi-sdk'; // if not globally loaded
+
+const handleBuyWithPi = async (item, userId) => {
+  Pi.createPayment({
+    amount: item.price,
+    memo: `Purchase: ${item.name}`,
+    metadata: { item_id: item.id },
+    onReadyForServerApproval: async (paymentId) => {
+      await fetch('/payment/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+    },
+    onReadyForServerCompletion: async (paymentId, txid) => {
+      await fetch('/payment/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId, txid }),
+      });
+
+      // Optionally update local inventory or refetch
+      alert(`✅ Bought ${item.name} with Pi!`);
+    },
+    onCancel: (paymentId) => {
+      console.log('Payment cancelled:', paymentId);
+    },
+    onError: (err, paymentId) => {
+      console.error('Pi SDK Error:', err);
+    }
+  });
+};
 
 export default function Marketplace({ userId }) {
   const [marketItems, setMarketItems] = useState([]);
