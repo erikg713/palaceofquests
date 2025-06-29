@@ -2,7 +2,8 @@
 
 from flask import Blueprint, request, jsonify, abort
 import uuid
-
+from backend.routes.metaverse_routes import metaverse_bp
+app.register_blueprint(metaverse_bp)
 metaverse_bp = Blueprint('metaverse', __name__)
 
 # --- In-memory "database" for demonstration purposes ---
