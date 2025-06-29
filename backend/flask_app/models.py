@@ -1,3 +1,34 @@
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import enum
+
+db = SQLAlchemy()
+
+class ItemCategory(enum.Enum):
+    vehicle = "vehicle"
+    weapon = "weapon"
+    magic = "magic"
+    furniture = "furniture"
+
+class User(db.Model):
+    id = db.Column(db.String, primary_key=True)
+    username = db.Column(db.String(100), nullable=False, unique=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Item(db.Model):
+    id = db.Column(db.String, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    category = db.Column(db.Enum(ItemCategory), nullable=False)
+    rarity = db.Column(db.String)
+    sell_price = db.Column(db.Integer)
+    icon_url = db.Column(db.String)
+    stats = db.Column(db.JSON)
+
+class Inventory(db.Model):
+    user_id = db.Column(db.String, db.ForeignKey("user.id"), primary_key=True)
+    item_id = db.Column(db.String, db.ForeignKey("item.id"), primary_key=True)
+    qty = db.Column(db.Integer, default=1)
+
 from datetime import datetime
 from sqlalchemy import (
     Column, Integer, String, Boolean, DateTime, Text, ForeignKey, 
