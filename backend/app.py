@@ -8,7 +8,11 @@ from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 from dotenv import load_dotenv
 from marshmallow import Schema, fields, ValidationError
+from backend.routes.game_routes import game_bp
+from backend.routes.auth_routes import auth_bp
 
+app.register_blueprint(game_bp)
+app.register_blueprint(auth_bp)
 # --- Environment Setup ---
 load_dotenv()
 
