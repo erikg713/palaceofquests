@@ -1,3 +1,23 @@
+import { useUserInfo } from '../hooks/useUserInfo';
+
+export default function Header() {
+  const user = useUserInfo();
+
+  return (
+    <header className="header-bar">
+      <h1>🏰 Palace of Quests</h1>
+      {user && (
+        <div className="user-info">
+          <span>👤 {user.username}</span>
+          <span>🪙 {user.balance} Pi</span>
+        </div>
+      )}
+    </header>
+  );
+}
+
+
+
 import { useContext, useEffect, useState, useCallback } from 'react';
 import { PiWalletContext } from '../context/PiWalletContext';
 import PiPaymentButton from '../components/PiPaymentButton';
