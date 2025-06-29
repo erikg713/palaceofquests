@@ -25,6 +25,17 @@ services:
         limits:
           cpus: "0.50"
           memory: "512M"
+    labels:
+      com.example.service: "python-backend"
+      com.example.version: "1.0"L", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "512M"
 
   javascript-frontend:
     build:
