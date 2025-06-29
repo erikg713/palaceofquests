@@ -30,3 +30,21 @@ def pi_login():
     token = jwt.encode({"user_id": user.id}, settings.JWT_SECRET_KEY, algorithm="HS256")
     return jsonify({"token": token})
 
+@auth_bp.route("/me", methods=["GET"])
+def me():
+    from app.utils.security import verify_token
+    user = verify_token(request)
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # Use Pi API to get balance
+    pi_headers = {"Authorization": f"Key {settings.PI_API_KEY}"}
+    balance_url = f"https://api.minepi.com/v2/users/{user.id}/balance"
+    r = requests.get(balance_url, headers=pi_headers)
+    pi_balance = r.json().get("balance") if r.ok else "?"
+
+    return jsonify({
+        "username": user.username,
+        "uid": user.id,
+        "balance": pi_balance
+    })
