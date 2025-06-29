@@ -4,6 +4,30 @@ import requests
 import jwt
 from app.models import db, User
 from app.config import settings
+from app.services.item_effects import trigger_item_effect
+
+@auth_bp.route('/payment/complete', methods=['POST'])
+def complete_payment():
+    payment_id = request.json.get('paymentId')
+    txid = request.json.get('txid')
+    payment = pi.complete_payment(payment_id, txid)
+
+    item_id = payment['metadata']['item_id']
+    user_id = payment['user_uid']
+
+    # Add item to inventory
+    inv = Inventory.query.filter_by(user_id=user_id, item_id=item_id).first()
+    if inv:
+        inv.qty += 1
+    else:
+        inv = Inventory(user_id=user_id, item_id=item_id, qty=1)
+        db.session.add(inv)
+
+    # 🔥 Trigger effect
+    trigger_item_effect(user_id, item_id)
+
+    db.session.commit()
+    return jsonify({ "success": True, "item_id": item_id })
 
 auth_bp = Blueprint("auth", __name__)
 
