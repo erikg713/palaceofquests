@@ -26,8 +26,3 @@ export async function loginWithPi() {
   });
 }
 
-    function onFailure(error) {
-      reject(error);
-    }
-  });
-}
