@@ -1,3 +1,31 @@
+class Quest(db.Model):
+    __tablename__ = 'quests'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    reward = db.Column(db.Float, nullable=False)  # Currency or token reward
+    level_required = db.Column(db.Integer, nullable=False)
+    created_by = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    creator = db.relationship('User', backref='created_quests')
+    user_quests = db.relationship('UserQuest', backref='quest')
+
+    def to_dict(self):
+        """Serialize to JSON for API responses."""
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'reward': self.reward,
+            'level_required': self.level_required,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat()
+        }
+
+    def __repr__(self):
+        return f"<Quest {self.title}>"
+
 from supabase import create_client, Client
 from typing import Optional, List, Dict
 from datetime import datetime
