@@ -1,38 +1,48 @@
-// validateRealms.test.ts
+// frontend/src/tests/validateRealms.test.ts
 
-import { validateRealms } from '../utils/validateRealms'; // Adjust path as needed
-import { realms } from './realms';
+import { validateRealms } from '../utils/validateRealms'; // Update path if needed
 
-interface Realm {
-  id: string; // or number if that's the real type
-  name: string;
-}
+// Mock data for test coverage
+const validRealms = [
+  { id: '1', name: 'Earth' },
+  { id: '2', name: 'Mars' },
+];
+
+const realmsMissingFields = [
+  { id: '3' },        // Missing name
+  { name: 'Venus' },  // Missing id
+];
+
+const realmsWrongTypes = [
+  { id: 4, name: 123 },
+];
+
+const realmsWithExtraFields = [
+  { id: '5', name: 'Jupiter', description: 'Gas giant' },
+];
 
 describe('validateRealms', () => {
-  it('validates a correct realms dataset without throwing', () => {
-    expect(() => validateRealms(realms)).not.toThrow();
+  it('accepts a valid array of realms', () => {
+    expect(() => validateRealms(validRealms)).not.toThrow();
   });
 
-  it('throws for realms with missing required fields', () => {
-    const missingFieldRealms = [{ id: 'abc' } as any, { name: 'Forgot ID' } as any];
-    expect(() => validateRealms(missingFieldRealms)).toThrow();
+  it('throws if any realm is missing required fields', () => {
+    expect(() => validateRealms(realmsMissingFields)).toThrow();
   });
 
-  it('throws for realms with incorrect types', () => {
-    const invalidTypedRealms = [{ id: 123, name: 456 }];
-    expect(() => validateRealms(invalidTypedRealms as any)).toThrow();
+  it('throws if any realm has incorrect types', () => {
+    expect(() => validateRealms(realmsWrongTypes as any)).toThrow();
   });
 
-  it('validates realms with additional properties (if allowed)', () => {
-    const extendedRealms = [{ id: 'r1', name: 'Realm X', description: 'extra' }];
-    expect(() => validateRealms(extendedRealms as any)).not.toThrow();
+  it('accepts realms with extra but harmless properties', () => {
+    expect(() => validateRealms(realmsWithExtraFields as any)).not.toThrow();
   });
 
-  it('throws for an empty realm list if required', () => {
+  it('throws on empty array (if not allowed by validator)', () => {
     expect(() => validateRealms([])).toThrow();
   });
 
-  it('throws when input is not an array', () => {
+  it('throws on non-array input', () => {
     expect(() => validateRealms(null as any)).toThrow();
     expect(() => validateRealms(undefined as any)).toThrow();
     expect(() => validateRealms({} as any)).toThrow();
