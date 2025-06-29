@@ -19,8 +19,8 @@ Base = declarative_base()
 class TimestampMixin:
     """Mixin for adding created_at and updated_at timestamp fields."""
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), 
-                       onupdate=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(),
+                        onupdate=func.now(), nullable=False)
 
 
 class ItemCategory(enum.Enum):
@@ -153,12 +153,12 @@ class Player(Base, TimestampMixin):
     is_active = Column(Boolean, default=True, nullable=False)
 
     # Relationships
-    quests = relationship("PlayerQuest", back_populates="player", 
-                         cascade="all, delete-orphan", lazy="selectin")
-    reward_transactions = relationship("PiRewardTransaction", back_populates="player", 
-                                     cascade="all, delete-orphan", lazy="selectin")
-    auth_logs = relationship("PiAuthLog", back_populates="player", 
-                           cascade="all, delete-orphan", lazy="selectin")
+    quests = relationship("PlayerQuest", back_populates="player",
+                          cascade="all, delete-orphan", lazy="selectin")
+    reward_transactions = relationship("PiRewardTransaction", back_populates="player",
+                                       cascade="all, delete-orphan", lazy="selectin")
+    auth_logs = relationship("PiAuthLog", back_populates="player",
+                             cascade="all, delete-orphan", lazy="selectin")
 
     @validates('username')
     def validate_username(self, key, username):
@@ -191,7 +191,8 @@ class Player(Base, TimestampMixin):
         return experience
 
     def __repr__(self):
-        return f"<Player id={self.id} username={self.username!r} pi_uid={self.pi_uid!r} active={self.is_active}>"
+        return (f"<Player id={self.id} username={self.username!r} "
+                f"pi_uid={self.pi_uid!r} active={self.is_active}>")
 
 
 class Quest(Base, TimestampMixin):
@@ -213,8 +214,8 @@ class Quest(Base, TimestampMixin):
     is_active = Column(Boolean, default=True, nullable=False)
 
     # Relationships
-    players = relationship("PlayerQuest", back_populates="quest", 
-                          cascade="all, delete-orphan", lazy="selectin")
+    players = relationship("PlayerQuest", back_populates="quest",
+                           cascade="all, delete-orphan", lazy="selectin")
 
     @validates('title')
     def validate_title(self, key, title):
@@ -282,8 +283,8 @@ class PiRewardTransaction(Base, TimestampMixin):
         Index("ix_pi_tx_status", "status"),
         UniqueConstraint("tx_id", name="uq_pi_tx_id"),
         CheckConstraint("amount > 0", name="ck_pi_tx_amount_positive"),
-        CheckConstraint("status IN ('pending', 'success', 'failed')", 
-                       name="ck_pi_tx_status_valid"),
+        CheckConstraint("status IN ('pending', 'success', 'failed')",
+                        name="ck_pi_tx_status_valid"),
     )
 
     id = Column(Integer, primary_key=True)
