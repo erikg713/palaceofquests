@@ -63,4 +63,6 @@ Contributions are welcome! Please follow these steps:
 This project is licensed under the [MIT License](LICENSE).
 ```
 
-Would you like me to implement these changes directly?
+### Tests ###
+npx eslint --fix .
+npx prettier --write .
