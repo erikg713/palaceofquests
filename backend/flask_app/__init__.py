@@ -8,7 +8,15 @@ from .config import Config
 from app.routes.pi_routes import pi_bp
 from supabase import create_client
 from flask_app.routes.pi_wallet import pi_wallet_bp
+from flask import Flask
+from flask_app.routes.pi_wallet import pi_wallet_bp
 
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = os.getenv('SECRET_KEY', 'change-this')
+    app.register_blueprint(pi_wallet_bp)
+    return app
+    
 def create_app():
     app = Flask(__name__)
     # ... other config ...
