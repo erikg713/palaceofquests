@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- Base image ---
-FROM python:3.9-slim AS base
+FROM python:3.9.16-slim AS base
 
 # Set workdir
 WORKDIR /app
@@ -9,23 +9,24 @@ WORKDIR /app
 # --- Builder stage: install dependencies in a venv ---
 FROM base AS builder
 
-# Install system dependencies (for pip, psycopg2, etc.)
+# Install system dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
         libpq-dev \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt only (for better cache usage)
+# Copy requirements.txt for dependency installation
 COPY --link requirements.txt ./
 
-# Create venv and install dependencies using pip cache
+# Create venv and install dependencies
 RUN python -m venv /app/.venv \
     && . /app/.venv/bin/activate \
     && pip install --upgrade pip \
-    && pip install --no-warn-script-location -r requirements.txt
+    && pip install --no-cache-dir --no-warn-script-location -r requirements.txt
 
-# Copy the rest of the application code (excluding .env and secrets)
+# Copy the rest of the application code
 COPY --link . .
 
 # --- Final stage ---
@@ -43,11 +44,11 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Set permissions
+# Set permissions and switch to non-root user
 RUN chown -R appuser:appgroup /app
 USER appuser
 
-# Expose the port FastAPI/Flask will run on (default 4000, but also 5000 for Flask fallback)
+# Expose the port for FastAPI/Flask
 EXPOSE 4000 5000
 
 # Default command: run FastAPI app if present, else fallback to Flask app.py
