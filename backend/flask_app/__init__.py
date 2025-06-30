@@ -10,7 +10,8 @@ from supabase import create_client
 from flask_app.routes.pi_wallet import pi_wallet_bp
 from flask import Flask
 from flask_app.routes.pi_wallet import pi_wallet_bp
-
+from dotenv import load_dotenv
+load_dotenv()
 def create_app():
     app = Flask(__name__)
     app.secret_key = os.getenv('SECRET_KEY', 'change-this')
