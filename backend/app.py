@@ -10,6 +10,17 @@ from dotenv import load_dotenv
 from marshmallow import Schema, fields, ValidationError
 from backend.routes.game_routes import game_bp
 from backend.routes.auth_routes import auth_bp
+import os
+from create_app import create_app
+from dotenv import load_dotenv
+
+load_dotenv()
+
+app = create_app()
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 4000))
+    app.run(host="0.0.0.0", port=port, debug=True)
 
 app.register_blueprint(game_bp)
 app.register_blueprint(auth_bp)
