@@ -17,17 +17,6 @@ import os
 from create_app import create_app
 from dotenv import load_dotenv
 
-load_dotenv()
-
-app = create_app()
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 4000))
-    app.run(host="0.0.0.0", port=port, debug=True)
-
-# Load environment variables once, early
-load_dotenv()
-
 # --- Configuration & Environment ---
 
 REQUIRED_ENV_VARS = ("PI_API_KEY", "SUPABASE_URL", "SUPABASE_KEY")
@@ -191,9 +180,13 @@ def cancel_payment() -> Any:
         handle_upstream_error(err, "Pi Network")
     return jsonify(pi_response)
 
-# --- Main Entry Point ---
+load_dotenv()
+
+app = create_app()
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", "5000"))
-    # Use debug=False in production; consider Gunicorn or similar WSGI server
-    app.run(host="0.0.0.0", port=port, debug=False)
+    port = int(os.getenv("PORT", 4000))
+    app.run(host="0.0.0.0", port=port, debug=True)
+
+# Load environment variables once, early
+load_dotenv()
