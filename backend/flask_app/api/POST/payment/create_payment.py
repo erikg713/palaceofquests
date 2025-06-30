@@ -3,7 +3,12 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.exceptions import BadRequest
 from your_database_module import create_payment_record  # Replace with your actual DB logic
-
+type PaymentArgs = {
+  amount: number // the amount of Pi you're paying to your user
+  memo: string // a short memo that describes what the payment is about
+  metadata: object // an arbitrary object that you can attach to this payment. This is for your own use. You should use this object as a way to link this payment with your internal business logic.
+  uid: string // a user uid of your app. You should have access to this value if a user has authenticated on your app.
+}
 bp = Blueprint('payment_create', __name__, url_prefix='/api/POST/payment')
 
 @bp.route('/create', methods=['POST'])
