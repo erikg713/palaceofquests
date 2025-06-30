@@ -13,6 +13,17 @@ from urllib3.util.retry import Retry
 
 from backend.routes.game_routes import game_bp
 from backend.routes.auth_routes import auth_bp
+import os
+from create_app import create_app
+from dotenv import load_dotenv
+
+load_dotenv()
+
+app = create_app()
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 4000))
+    app.run(host="0.0.0.0", port=port, debug=True)
 
 # Load environment variables once, early
 load_dotenv()
