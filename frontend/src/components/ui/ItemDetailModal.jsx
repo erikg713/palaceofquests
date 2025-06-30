@@ -1,6 +1,12 @@
 import React, { useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import './styles/ui.css';
+// In ItemDetailModal.jsx
+const handleUse = async () => {
+  await useItem(item, userId);
+  onUse(item); // ← trigger 3D effect
+  onClose();
+};
 
 const ItemDetailModal = ({ item, onClose }) => {
   // Ensure modal closes on Escape key
