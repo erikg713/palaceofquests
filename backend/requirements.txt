@@ -1,42 +1,26 @@
-# ===============================
-# Palace of Quests Backend Requirements
-# ===============================
-# All dependencies are pinned for reproducibility and security.
-# Remove any sections not used in your codebase.
+# ==============================
+# Palace of Quests — Backend Requirements
+# Flask-based backend with Supabase integration
+# ==============================
 
-# --- Pi Network ---
-pip install pi-backend-sdk
-PI_API_KEY=your-pi-api-key
-PI_SECRET=your-pi-secret
-PI_APP_ID=your-pi-app-id
-npm install three @react-three/fiber @react-three/drei
+Flask==2.2.5
+Flask-CORS==6.0.0
+Flask-Migrate==4.0.4
+supabase==0.2.0
+python-dotenv==1.0.0
+requests==2.32.4
 
-# --- Core FastAPI Server ---
-uvicorn==0.22.0        # ASGI server for FastAPI
+# Security-related pins (keep updated and audit regularly)
+urllib3==2.5.0
+websockets==10.0.0
+werkzeug==3.0.6
+zipp==3.19.1
 
-# --- HTTP Clients ---
-requests==2.32.4       # Popular HTTP client (remove if unused)
-
-# --- Environment Variables ---
-python-dotenv==1.0.0   # Loads environment variables from .env
-
-# --- Database / Supabase Client ---
-supabase==0.2.0        # Supabase Python client
-
-# --- Security Patches (Pinned by Snyk) ---
-urllib3==2.5.0         # Security pin
-websockets==10.0.0     # Security pin
-
-# --- Flask Stack (Uncomment if using Flask) ---
-# Flask==2.2.5
-# Flask-CORS==6.0.0
-# Flask-Migrate==4.0.4
-
-# --- Vulnerability Mitigations (Indirect requirements) ---
-werkzeug==3.0.6        # Pin to avoid vulnerabilities
-zipp==3.19.1           # Pin to avoid vulnerabilities
-
-# --- Notes ---
-# - Remove any packages you do not use to keep the environment lean.
-# - For frontend JavaScript packages like axios, use package.json instead.
-# - Audit dependencies regularly (e.g., pip-audit, Snyk).
+# ==============================
+# Notes:
+# - All dependency versions are pinned for security and reproducibility.
+# - Only include what you use—remove unnecessary packages.
+# - Audit dependencies with pip-audit or similar tools.
+# - For Pi Network SDK: install separately if needed.
+# - Frontend JS deps go in package.json, not here.
+# ==============================
