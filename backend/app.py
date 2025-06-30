@@ -3,34 +3,26 @@ import uuid
 import logging
 from typing import Any, Dict
 
-import requests
 from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 from dotenv import load_dotenv
 from marshmallow import Schema, fields, ValidationError
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 from backend.routes.game_routes import game_bp
 from backend.routes.auth_routes import auth_bp
-import os
-from create_app import create_app
-from dotenv import load_dotenv
 
+# Load environment variables once, early
 load_dotenv()
 
-app = create_app()
+# --- Configuration & Environment ---
 
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 4000))
-    app.run(host="0.0.0.0", port=port, debug=True)
-
-app.register_blueprint(game_bp)
-app.register_blueprint(auth_bp)
-# --- Environment Setup ---
-load_dotenv()
-
-REQUIRED_ENV_VARS = ["PI_API_KEY", "SUPABASE_URL", "SUPABASE_KEY"]
-missing_vars = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
-if missing_vars:
-    raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
+REQUIRED_ENV_VARS = ("PI_API_KEY", "SUPABASE_URL", "SUPABASE_KEY")
+missing = [v for v in REQUIRED_ENV_VARS if not os.environ.get(v)]
+if missing:
+    raise RuntimeError(f"Missing required environment variables: {', '.join(missing)}")
 
 PI_API_KEY = os.environ["PI_API_KEY"]
 SUPABASE_URL = os.environ["SUPABASE_URL"]
@@ -43,9 +35,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger("palaceofquests.backend")
 
-# --- Flask App ---
+# --- Flask App Setup ---
 app = Flask(__name__)
 app.config["JSONIFY_PRETTYPRINT_REGULAR"] = False
+
 CORS(
     app,
     resources={r"/api/*": {"origins": [
@@ -55,29 +48,35 @@ CORS(
     supports_credentials=True
 )
 
-# --- HTTP Session with Retries ---
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+app.register_blueprint(game_bp)
+app.register_blueprint(auth_bp)
 
-SESSION = requests.Session()
-retry_strategy = Retry(
-    total=3,
-    status_forcelist=[429, 500, 502, 503, 504],
-    backoff_factor=1,
-)
-adapter = HTTPAdapter(max_retries=retry_strategy)
-SESSION.mount("https://", adapter)
-SESSION.mount("http://", adapter)
+# --- HTTP Session with Retries ---
+def get_session() -> requests.Session:
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=3,
+        status_forcelist=[429, 500, 502, 503, 504],
+        backoff_factor=1,
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+SESSION = get_session()
 DEFAULT_TIMEOUT = 5  # seconds
 
-# --- Utils ---
+# --- Utility Functions ---
 def get_pi_headers() -> Dict[str, str]:
+    """Headers for Pi Network API requests."""
     return {
         "Authorization": f"Key {PI_API_KEY}",
         "Content-Type": "application/json"
     }
 
 def get_supabase_headers() -> Dict[str, str]:
+    """Headers for Supabase API requests."""
     return {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -85,18 +84,18 @@ def get_supabase_headers() -> Dict[str, str]:
     }
 
 def handle_upstream_error(err: Exception, api: str):
-    logger.error(f"{api} failed: {err}")
+    logger.error("%s failed: %s", api, err)
     resp = getattr(err, 'response', None)
     if resp is not None:
-        logger.error(f"Upstream response: {resp.text}")
+        logger.error("Upstream response: %s", resp.text)
     abort(502, description=f"Upstream {api} API error")
 
-def json_error(message: str, status_code: int = 400):
+def json_error(message: Any, status_code: int = 400):
     response = jsonify({"error": message})
     response.status_code = status_code
     return response
 
-# --- Schemas (Singletons for efficiency) ---
+# --- Marshmallow Schemas ---
 class PaymentCreateSchema(Schema):
     uid = fields.String(required=True)
     amount = fields.Float(required=True)
@@ -111,6 +110,7 @@ payment_create_schema = PaymentCreateSchema()
 payment_action_schema = PaymentActionSchema()
 
 # --- Routes ---
+
 @app.route("/", methods=["GET"])
 def health() -> Any:
     return jsonify({"status": "Backend running"})
@@ -132,7 +132,7 @@ def create_payment() -> Any:
     }
     try:
         resp = SESSION.post(
-            f"https://api.minepi.com/v2/payments",
+            "https://api.minepi.com/v2/payments",
             headers=get_pi_headers(),
             json=payload,
             timeout=DEFAULT_TIMEOUT
@@ -180,7 +180,9 @@ def cancel_payment() -> Any:
         handle_upstream_error(err, "Pi Network")
     return jsonify(pi_response)
 
-# --- Entry point ---
+# --- Main Entry Point ---
+
 if __name__ == "__main__":
-    # Only for development; use Gunicorn or similar in production
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=False)
+    port = int(os.getenv("PORT", "5000"))
+    # Use debug=False in production; consider Gunicorn or similar WSGI server
+    app.run(host="0.0.0.0", port=port, debug=False)
