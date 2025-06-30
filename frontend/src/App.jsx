@@ -2,7 +2,15 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import React from "react";
 import PiWallet from "./components/PiWallet";
+import { PiAuthProvider } from './context/PiAuthContext';
 
+export default function App() {
+  return (
+    <PiAuthProvider>
+      {/* your navigation and screens */}
+    </PiAuthProvider>
+  );
+}
 function App() {
   return (
     <div>
