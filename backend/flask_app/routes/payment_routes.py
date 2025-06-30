@@ -1,6 +1,16 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.exceptions import BadRequest, InternalServerError
 from marshmallow import Schema, fields, ValidationError
+from app.utils.pi_network import PiNetwork
+import os
+
+# Initialize Pi SDK
+pi = PiNetwork()
+pi.initialize(
+    api_key=os.getenv("PI_API_KEY"),
+    wallet_private_key=os.getenv("PI_WALLET_SECRET"),
+    network="Pi Network"  # or "Pi Testnet"
+)
 
 # Blueprint definition
 payment_bp = Blueprint('payment', __name__, url_prefix='/payment')
