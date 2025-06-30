@@ -9,6 +9,7 @@ Flask-Migrate==4.0.4
 supabase==0.2.0
 python-dotenv==1.0.0
 requests==2.32.4
+marshmallow==4.0.0
 
 # Security-related pins (keep updated and audit regularly)
 urllib3==2.5.0
