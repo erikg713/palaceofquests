@@ -1,6 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from "react";
+import PiWallet from "./components/PiWallet";
 
+function App() {
+  return (
+    <div>
+      <h1>Palace of Quests</h1>
+      <PiWallet />
+    </div>
+  );
+}
+
+export default App;
 // Pages
 import Home from './pages/Home';
 import Quests from './pages/Quests';
