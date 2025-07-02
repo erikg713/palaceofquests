@@ -21,7 +21,12 @@ const REALM = {
   name: 'Moon Fortress',
   unlockCost: 2
 };
-
+<div className="teleport-buttons">
+  <button onClick={...}>Teleport to Area 1</button>
+  <button onClick={...}>Teleport to Area 2</button>
+  {/* ...other teleport buttons... */}
+</div>
+// Update WorldHub.jsx to use PiPaymentButton // (add this line at the top) import PiPaymentButton from '../components/PiPaymentButton';
 export default function WorldHub() {
   const { walletAddress, piUser } = useContext(PiWalletContext);
   const [showPayModal, setShowPayModal] = useState(false);
@@ -116,3 +121,25 @@ export default function WorldHub() {
     </div>
   );
 }
+<div className="teleport-buttons">
+  <button onClick={...}>Teleport to Area 1</button>
+  <button onClick={...}>Teleport to Area 2</button>
+  {/* ...other teleport buttons... */}
+</div>
+
+{/* Pi payment for Launch Access */}
+<PiPaymentButton
+  amount={1}
+  memo="Launch Protocol Alpha"
+  metadata={{ realm: 'Moon Fortress', type: 'launch' }}
+  onPaymentComplete={() => alert('Launch fee paid. Teleport unlocked!')}
+/>
+  <div className="payment-section" style={{ marginTop: 24 }}>
+  <h4>Launch Access</h4>
+  <PiPaymentButton
+    amount={1}
+    memo="Launch Protocol Alpha"
+    metadata={{ realm: 'Moon Fortress', type: 'launch' }}
+    onPaymentComplete={() => alert('Launch fee paid. Teleport unlocked!')}
+  />
+</div>
