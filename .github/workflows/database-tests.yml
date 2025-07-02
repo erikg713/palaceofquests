@@ -1,15 +1,47 @@
 # palaceofquests
-name: 'database-tests'
+name: 'Database Tests'
+
 on:
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x] # Example of matrix for testing multiple Node.js versions
     steps:
-      - uses: actions/checkout@v3
-      - uses: supabase/setup-cli@v1
+      # Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Supabase CLI
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
         with:
           version: latest
-      - run: supabase db start
-      - run: supabase test db
+
+      # Start the Supabase database
+      - name: Start database
+        run: supabase db start
+
+      # Run database tests
+      - name: Run database tests
+        run: supabase test db
+
+      # Save logs and test results as artifacts (optional)
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-logs
+          path: ./logs # Replace with the actual path to your logs
+
+      # Example of caching Supabase CLI (optional)
+      - name: Cache Supabase CLI
+        uses: actions/cache@v3
+        with:
+          path: ~/.supabase
+          key: ${{ runner.os }}-supabase-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-supabase-
