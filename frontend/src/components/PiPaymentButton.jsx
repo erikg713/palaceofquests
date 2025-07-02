@@ -1,4 +1,5 @@
-// src/components/PiPaymentButton.jsx import React from 'react';
+import PiPaymentButton from '../components/PiPaymentButton';
+import React from 'react';
 import { useUserInventory } from '../hooks/useUserInventory';
 
 const { addItem } = useUserInventory(userId); // userId must come from Supabase Auth
