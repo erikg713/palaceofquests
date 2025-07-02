@@ -1,10 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import AchievementGallery from './components/AchievementGallery';
 // Context Providers
 import { PiAuthProvider } from './context/PiAuthContext';
 import { PlayerProvider } from './context/PlayerContext';
-
 // Pages
 import Home from './pages/Home';
 import Quests from './pages/Quests';
@@ -13,13 +12,11 @@ import InventoryPage from './pages/InventoryPage';
 import WorldHub from './pages/WorldHub';
 import WorldMapPage from './pages/WorldMapPage';
 import NPCPage from './pages/NPCPage';
-
 // Components
 import Navbar from './components/Navbar';
 import QuestLog from './components/QuestLog';
 import LanguageToggle from './components/LanguageToggle';
 import GameOverlay from './components/GameOverlay';
-
 // Hooks
 import { usePiAuth } from './hooks/usePiAuth';
 
