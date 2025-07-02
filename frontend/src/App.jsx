@@ -69,5 +69,13 @@ const App = () => {
     </PiAuthProvider>
   );
 };
-
+function App() {
+  return (
+    <div className="App">
+      {/* Other components, header, etc. */}
+      <AchievementGallery />
+      {/* Other content */}
+    </div>
+  );
+}
 export default App;
