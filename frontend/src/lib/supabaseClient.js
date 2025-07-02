@@ -1,31 +1,24 @@
-// src/lib/supabaseClient.js import { createClient } from '@supabase/supabase-js';
+// src/lib/supabaseClient.js
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL; const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+import { createClient } from '@supabase/supabase-js';
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+/**
+ * Gets required env variables, throws if not found.
+ * @param {string} key - The environment variable key.
+ * @returns {string} - The environment variable value.
+ */
+function getEnv(key) {
+  const value = import.meta.env[key];
+  if (!value) {
+    throw new Error(`Environment variable ${key} is missing.`);
+  }
+  return value;
+}
 
-// src/hooks/useUserInventory.js import { useEffect, useState } from 'react'; import { supabase } from '../lib/supabaseClient';
+const SUPABASE_URL = getEnv('VITE_SUPABASE_URL');
+const SUPABASE_ANON_KEY = getEnv('VITE_SUPABASE_ANON_KEY');
 
-export const useUserInventory = (userId) => { const [inventory, setInventory] = useState([]); const [loading, setLoading] = useState(true);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-useEffect(() => { const fetchInventory = async () => { if (!userId) return; const { data, error } = await supabase .from('inventory') .select('*') .eq('user_id', userId);
-
-if (error) console.error(error);
-  else setInventory(data);
-  setLoading(false);
-};
-
-fetchInventory();
-
-}, [userId]);
-
-const addItem = async (item) => { const { data, error } = await supabase .from('inventory') .insert([{ ...item, user_id: userId }]); if (error) console.error(error); else setInventory([...inventory, data[0]]); };
-
-return { inventory, loading, addItem }; };
-
-// Add to PiPaymentButton.jsx (or callback in ItemCard) import { useUserInventory } from '../hooks/useUserInventory';
-
-const { addItem } = useUserInventory(userId); // userId must come from Supabase Auth
-
-<PiPaymentButton amount={1} memo={Buy ${item.name}} metadata={{ itemId: item.id, type: 'purchase' }} onPaymentComplete={() => { alert(${item.name} purchased with Pi!); onEquip(item); addItem({ id: item.id, name: item.name, rarity: item.rarity, icon: item.icon }); }} />
-
+// Optionally, provide a default export for flexibility.
+export default supabase;
