@@ -1,145 +1,52 @@
-import { usePlayer } from '../context/PlayerContext';
-
-export default function WorldHub() {
-  const { player } = usePlayer();
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">Welcome, {player.username}!</h1>
-      <p>Level: {player.level}</p>
-    </div>
-  );
-}
-
-
 import React, { useState, useContext, useCallback } from 'react';
+import { usePlayer } from '../context/PlayerContext';
 import { PiWalletContext } from '../context/PiWalletContext';
 import PiPaymentModal from '../components/PiPaymentModal';
 import RewardModal from '../components/RewardModal';
+import PiPaymentButton from '../components/PiPaymentButton';
 
-const REALM = {
-  id: 'moon_fortress',
-  name: 'Moon Fortress',
-  unlockCost: 2
-};
-<div className="teleport-buttons">
-  <button onClick={...}>Teleport to Area 1</button>
-  <button onClick={...}>Teleport to Area 2</button>
-  {/* ...other teleport buttons... */}
-</div>
-// Update WorldHub.jsx to use PiPaymentButton // (add this line at the top) import PiPaymentButton from '../components/PiPaymentButton';
+const REALM = { id: 'moon_fortress', name: 'Moon Fortress', unlockCost: 2 };
+
 export default function WorldHub() {
+  const { player } = usePlayer();
   const { walletAddress, piUser } = useContext(PiWalletContext);
-  const [showPayModal, setShowPayModal] = useState(false);
-  const [showReward, setShowReward] = useState(false);
-  const [loot, setLoot] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  const [state, setState] = useState({
+    showPayModal: false,
+    showReward: false,
+    loot: null,
+    loading: false,
+    error: '',
+  });
 
   const handleUnlockRealm = useCallback(async () => {
-    setLoading(true);
-    setError('');
+    setState((prev) => ({ ...prev, loading: true, error: '' }));
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/unlock-realm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: piUser?.uid,
-          realm_id: REALM.id
-        })
-      });
-
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/grant-loot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: piUser?.uid,
-          realm_id: REALM.id
-        })
-      });
-
-      const data = await res.json();
-      setLoot(data.granted || null);
-      setShowReward(true);
-      setShowPayModal(false);
+      const [unlockRes, lootRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/unlock-realm`, { ... }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/grant-loot`, { ... }),
+      ]);
+      const lootData = await lootRes.json();
+      setState((prev) => ({
+        ...prev,
+        loot: lootData.granted || null,
+        showReward: true,
+        showPayModal: false,
+      }));
     } catch {
-      setError('Failed to unlock the realm. Please try again.');
+      setState((prev) => ({ ...prev, error: 'Failed to unlock the realm. Please try again.' }));
     } finally {
-      setLoading(false);
+      setState((prev) => ({ ...prev, loading: false }));
     }
   }, [piUser]);
-
+  
   if (!walletAddress) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="bg-white/10 rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Connect Pi Wallet</h2>
-          <p className="text-gray-200">Please connect your Pi Wallet to access the World Hub.</p>
-        </div>
-      </div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">...</div>
     );
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12">
-      <div className="w-full max-w-xl bg-white/10 rounded-xl shadow-2xl p-8">
-        <h1 className="text-3xl font-extrabold text-yellow-300 mb-4 flex items-center gap-2">
-          <span>Welcome to the World Hub</span>
-          <span role="img" aria-label="globe">🌍</span>
-        </h1>
-        <div className="mb-6">
-          <p className="text-lg text-white">
-            <span className="font-semibold text-yellow-200">Realm:</span> {REALM.name}
-          </p>
-        </div>
-        <button
-          className={`w-full py-3 rounded-lg font-bold text-xl bg-gradient-to-r from-yellow-400 to-yellow-600 text-gray-900 shadow-md transition hover:scale-105 ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
-          onClick={() => setShowPayModal(true)}
-          disabled={loading}
-        >
-          {loading ? 'Processing...' : `Unlock ${REALM.name} for ${REALM.unlockCost} π`}
-        </button>
-        {error && (
-          <div className="mt-4 text-red-400 text-center">{error}</div>
-        )}
-      </div>
-      <PiPaymentModal
-        visible={showPayModal}
-        onClose={() => setShowPayModal(false)}
-        userId={piUser?.uid}
-        payload={{
-          amount: REALM.unlockCost,
-          memo: `Unlock ${REALM.name}`,
-          metadata: { type: 'unlock', realm_id: REALM.id },
-          onSuccess: handleUnlockRealm
-        }}
-      />
-      <RewardModal
-        visible={showReward}
-        onClose={() => setShowReward(false)}
-        loot={loot}
-      />
-    </div>
+    <div className="min-h-[70vh] flex flex-col items-center py-12">...</div>
   );
 }
-<div className="teleport-buttons">
-  <button onClick={...}>Teleport to Area 1</button>
-  <button onClick={...}>Teleport to Area 2</button>
-  {/* ...other teleport buttons... */}
-</div>
-
-{/* Pi payment for Launch Access */}
-<PiPaymentButton
-  amount={1}
-  memo="Launch Protocol Alpha"
-  metadata={{ realm: 'Moon Fortress', type: 'launch' }}
-  onPaymentComplete={() => alert('Launch fee paid. Teleport unlocked!')}
-/>
-  <div className="payment-section" style={{ marginTop: 24 }}>
-  <h4>Launch Access</h4>
-  <PiPaymentButton
-    amount={1}
-    memo="Launch Protocol Alpha"
-    metadata={{ realm: 'Moon Fortress', type: 'launch' }}
-    onPaymentComplete={() => alert('Launch fee paid. Teleport unlocked!')}
-  />
-</div>
