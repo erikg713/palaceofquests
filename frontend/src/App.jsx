@@ -45,7 +45,22 @@ const App = () => {
                 Login with Pi Wallet
               </button>
             )}
+import React, { Suspense, lazy } from 'react';
 
+const AchievementGallery = lazy(() => import('./components/AchievementGallery'));
+
+function App() {
+  return (
+    <div className="App">
+      {/* Other components */}
+      <Suspense fallback={<div>Loading achievements...</div>}>
+        <AchievementGallery />
+      </Suspense>
+    </div>
+  );
+}
+
+export default App;
             <Routes>
               <Route path="/" element={<WorldHub />} />
               <Route path="/home" element={<Home />} />
