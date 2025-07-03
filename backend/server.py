@@ -209,3 +209,61 @@ def get_payment(payment_id):
 if __name__ == "__main__":
     logger.info(f"Starting Palace of Quests backend on port {PORT}")
     app.run(host="0.0.0.0", port=PORT)
+class PiNetworkService:
+    # ... existing methods ...
+
+    def processOrder(self, username, amount, memo, metadata, uid):
+        """
+        Process an order by creating, submitting, and completing a payment.
+        Args:
+            username (str): User's Pi Network username
+            amount (float): Payment amount
+            memo (str): Payment description
+            metadata (dict): Additional payment metadata
+            uid (str): Unique user ID
+        Returns:
+            dict: Completed payment details
+        Raises:
+            RuntimeError: If any step in the payment process fails
+        """
+        logger.info(f"Processing order for user {username}, amount {amount}")
+        try:
+            # Step 1: Create payment
+            payment_id = self.create_payment(username, amount, memo, metadata, uid)
+            logger.info(f"Created payment {payment_id}")
+
+            # Step 2: Submit payment
+            txid = self.submit_payment(payment_id)
+            logger.info(f"Submitted payment {payment_id} with txid {txid}")
+
+            # Step 3: Complete payment
+            payment = self.complete_payment(payment_id, txid)
+            logger.info(f"Completed payment {payment_id}")
+
+            return payment
+        except Exception as e:
+            logger.error(f"Order processing failed for user {username}: {str(e)}")
+            raise RuntimeError(f"Failed to process order: {str(e)}")
+
+# New Flask endpoint
+@app.route("/process-order", methods=["POST"])
+@limiter.limit("30 per 10 minutes")
+def process_order():
+    try:
+        data = request.get_json(force=True)
+        validated = payment_schema.load(data)
+        payment = pi_service.processOrder(
+            validated["username"],
+            validated["amount"],
+            validated["memo"],
+            validated.get("metadata", {}),
+            validated["uid"],
+        )
+        logger.info(f"Order processed successfully for user {validated['username']}")
+        return jsonify({"payment": payment}), 200
+    except ValidationError as e:
+        logger.warning(f"Validation error: {e.messages}")
+        return jsonify({"error": e.messages}), 400
+    except Exception as e:
+        logger.error(f"Process order error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
