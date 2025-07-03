@@ -267,3 +267,62 @@ def process_order():
     except Exception as e:
         logger.error(f"Process order error: {str(e)}")
         return jsonify({"error": str(e)}), 500
+class PiNetworkService:
+    BASE_URL = "https://api.minepi.com/v2"
+
+    def __init__(self, api_key, wallet_secret):
+        self.api_key = api_key
+        self.wallet_secret = wallet_secret
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Key {self.api_key}",
+            "Content-Type": "application/json"
+        })
+
+    def _make_request(self, method, endpoint, payload=None, headers=None):
+        """
+        Generic method to make HTTP requests to Pi Network API.
+        Args:
+            method (str): HTTP method (e.g., 'GET', 'POST')
+            endpoint (str): API endpoint (e.g., '/payments')
+            payload (dict, optional): Request payload for POST requests
+            headers (dict, optional): Additional headers
+        Returns:
+            dict: JSON response
+        Raises:
+            RuntimeError: If the request fails
+        """
+        url = f"{self.BASE_URL}{endpoint}"
+        try:
+            resp = self.session.request(method, url, json=payload, headers=headers)
+            if resp.status_code not in (200, 201):
+                logger.error(f"API request failed: {method} {url} - {resp.text}")
+                raise RuntimeError(f"API request failed: {resp.text}")
+            return resp.json()
+        except requests.RequestException as e:
+            logger.error(f"API request error: {method} {url} - {str(e)}")
+            raise RuntimeError(f"API request error: {str(e)}")
+
+    def create_payment(self, username, amount, memo, metadata, uid):
+        payload = {
+            "username": username,
+            "amount": amount,
+            "memo": memo,
+            "metadata": metadata,
+            "uid": uid,
+        }
+        return self._make_request("POST", "/payments", payload).get("payment_id")
+
+    def submit_payment(self, payment_id):
+        return self._make_request("POST", f"/payments/{payment_id}/submit").get("txid")
+
+    def complete_payment(self, payment_id, txid):
+        payload = {"txid": txid}
+        return self._make_request("POST", f"/payments/{payment_id}/complete", payload)
+
+    def get_payment(self, payment_id):
+        return self._make_request("GET", f"/payments/{payment_id}")
+
+    def verify_access_token(self, access_token):
+        headers = {"Authorization": f"Bearer {access_token}"}
+        return self._make_request("GET", "/me", headers=headers)
