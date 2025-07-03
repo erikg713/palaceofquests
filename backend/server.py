@@ -326,3 +326,153 @@ class PiNetworkService:
     def verify_access_token(self, access_token):
         headers = {"Authorization": f"Bearer {access_token}"}
         return self._make_request("GET", "/me", headers=headers)
+class PiNetworkError(Exception):
+    """Base exception for Pi Network errors."""
+    pass
+
+class PaymentCreationError(PiNetworkError):
+    """Raised when payment creation fails."""
+    pass
+
+class PaymentSubmissionError(PiNetworkError):
+    """Raised when payment submission fails."""
+    pass
+
+class PaymentCompletionError(PiNetworkError):
+    """Raised when payment completion fails."""
+    pass
+
+class PiNetworkService:
+    # ... existing code ...
+
+    def create_payment(self, username, amount, memo, metadata, uid):
+        try:
+            payload = {
+                "username": username,
+                "amount": amount,
+                "memo": memo,
+                "metadata": metadata,
+                "uid": uid,
+            }
+            return self._make_request("POST", "/payments", payload).get("payment_id")
+        except RuntimeError as e:
+            raise PaymentCreationError(f"Failed to create payment: {str(e)}")
+
+    def submit_payment(self, payment_id):
+        try:
+            return self._make_request("POST", f"/payments/{payment_id}/submit").get("txid")
+        except RuntimeError as e:
+            raise PaymentSubmissionError(f"Failed to submit payment {payment_id}: {str(e)}")
+
+    def complete_payment(self, payment_id, txid):
+        try:
+            payload = {"txid": txid}
+            return self._make_request("POST", f"/payments/{payment_id}/complete", payload)
+        except RuntimeError as e:
+            raise PaymentCompletionError(f"Failed to complete payment {payment_id}: {str(e)}")
+
+# Update endpoint to handle specific errors
+@app.route("/process-order", methods=["POST"])
+@limiter.limit("30 per 10 minutes")
+def process_order():
+    try:
+        data = request.get_json(force=True)
+        validated = payment_schema.load(data)
+        payment = pi_service.processOrder(
+            validated["username"],
+            validated["amount"],
+            validated["memo"],
+            validated.get("metadata", {}),
+            validated["uid"],
+        )
+        return jsonify({"payment": payment}), 200
+    except ValidationError as e:
+        return jsonify({"error": e.messages}), 400
+    except PaymentCreationError as e:
+        logger.error(f"Payment creation error: {str(e)}")
+        return jsonify({"error": str(e)}), 400
+    except (PaymentSubmissionError, PaymentCompletionError) as e:
+        logger.error(f"Payment processing error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        return jsonify({"error": "Internal server error"}), 500class PiNetworkClient:
+    """Adapter for HTTP requests to Pi Network API."""
+    def __init__(self, api_key):
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Key {api_key}",
+            "Content-Type": "application/json"
+        })
+
+    def request(self, method, url, payload=None, headers=None):
+        return self.session.request(method, url, json=payload, headers=headers)
+
+class PiNetworkService:
+    def __init__(self, api_key, wallet_secret, client=None):
+        self.api_key = api_key
+        self.wallet_secret = wallet_secret
+        self.client = client or PiNetworkClient(api_key)
+
+    def _make_request(self, method, endpoint, payload=None, headers=None):
+        url = f"{self.BASE_URL}{endpoint}"
+        try:
+            resp = self.client.request(method, url, payload, headers)
+            if resp.status_code not in (200, 201):
+                logger.error(f"API request failed: {method} {url} - {resp.text}")
+                raise RuntimeError(f"API request failed: {resp.text}")
+            return resp.json()
+        except requests.RequestException as e:
+            logger.error(f"API request error: {method} {url} - {str(e)}")
+            raise RuntimeError(f"API request error: {str(e)}")from abc import ABC, abstractmethod
+
+class PaymentService(ABC):
+    @abstractmethod
+    def processOrder(self, username, amount, memo, metadata, uid):
+        pass
+
+class PiNetworkService(PaymentService):
+    def __init__(self, api_key, wallet_secret, client=None):
+        self.api_key = api_key
+        self.wallet_secret = wallet_secret
+        self.client = client or PiNetworkClient(api_key)
+
+    def processOrder(self, username, amount, memo, metadata, uid):
+        payment_id = self.create_payment(username, amount, memo, metadata, uid)
+        txid = self.submit_payment(payment_id)
+        return self.complete_payment(payment_id, txid)
+
+    # ... other methods as before ...
+
+# Example: Future Stripe implementation
+class StripeService(PaymentService):
+    def processOrder(self, username, amount, memo, metadata, uid):
+        # Stripe-specific logic
+        pass
+
+# Update Flask app to use PaymentService
+app = Flask(__name__)
+payment_service = PiNetworkService(
+    api_key=os.getenv("PI_API_KEY"),
+    wallet_secret=os.getenv("PI_WALLET_SECRET")
+)
+
+@app.route("/process-order", methods=["POST"])
+@limiter.limit("30 per 10 minutes")
+def process_order():
+    try:
+        data = request.get_json(force=True)
+        validated = payment_schema.load(data)
+        payment = payment_service.processOrder(
+            validated["username"],
+            validated["amount"],
+            validated["memo"],
+            validated.get("metadata", {}),
+            validated["uid"],
+        )
+        return jsonify({"payment": payment}), 200
+    except ValidationError as e:
+        return jsonify({"error": e.messages}), 400
+    except Exception as e:
+        logger.error(f"Process order error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
