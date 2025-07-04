@@ -1,16 +1,13 @@
-// frontend/src/auth/piAuth.js
-
 /**
- * Handles user authentication using the Pi Network SDK.
- * Validates SDK presence, requests authentication with given scopes,
- * and returns a normalized user object.
+ * Handles authentication with the Pi Network SDK.
+ * Checks for SDK availability, requests authentication, and returns normalized user data.
  *
- * @param {string[]} scopes - Permissions to request from the Pi Network SDK.
+ * @param {string[]} scopes - Pi Network permissions to request.
  * @returns {Promise<{ user: { uid: string, username: string } }>}
- * @throws {Error} If SDK is unavailable or authentication fails.
+ * @throws {Error} If Pi SDK is unavailable or authentication fails.
  */
 export async function authenticateWithPi(scopes = ['username', 'payments']) {
-  if (typeof window === 'undefined' || !window.Pi || typeof window.Pi.authenticate !== 'function') {
+  if (typeof window === 'undefined' || !window.Pi?.authenticate) {
     throw new Error('Pi Network SDK is not available in this environment.');
   }
 
@@ -24,8 +21,8 @@ export async function authenticateWithPi(scopes = ['username', 'payments']) {
 
     return { user: { uid: user.uid, username: user.username } };
   } catch (error) {
-    // Only log detailed error info in development for security
     if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
       console.error('[PiAuth] Authentication error:', error);
     }
     throw new Error('Authentication failed. Please try again.');
