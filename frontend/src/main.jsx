@@ -5,6 +5,11 @@ import { mockPiSDK } from './utils/mockPi.js';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
 // Utility for environment checks
 const isDevelopment = import.meta.env.MODE === 'development';
