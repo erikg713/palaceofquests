@@ -1,42 +1,50 @@
 // config.js
 
-// Determine the current environment
+// Identify the current environment
 const ENV = import.meta.env.MODE || 'development';
 
-// Default configuration (fallback values)
+// Centralized defaults (only used for local development)
 const DEFAULTS = {
   API_BASE_URL: 'http://localhost:5000',
   PI_API_ENDPOINT: 'https://api.minepi.com',
-  PI_APP_ID: 'your.pi.app.id',
+  PI_APP_ID: '',
   SUPABASE_URL: '',
   SUPABASE_KEY: '',
 };
 
-// Configuration object
+// Helper to get config value, fallback to default in development only
+function getConfig(envVar, defaultKey) {
+  const value = import.meta.env[envVar];
+  if (typeof value !== 'undefined' && value !== '') return value;
+  if (ENV === 'development') return DEFAULTS[defaultKey];
+  return '';
+}
+
 const CONFIG = {
-  // Flask backend base URL
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || (ENV === 'production' ? 'https://your-production-url.com' : DEFAULTS.API_BASE_URL),
-
-  // Pi Network settings
-  PI_APP_ID: import.meta.env.VITE_PI_APP_ID || DEFAULTS.PI_APP_ID,
+  API_BASE_URL: getConfig('VITE_API_BASE_URL', 'API_BASE_URL'),
+  PI_APP_ID: getConfig('VITE_PI_APP_ID', 'PI_APP_ID'),
   PI_API_ENDPOINT: DEFAULTS.PI_API_ENDPOINT,
-
-  // Supabase config
-  SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || DEFAULTS.SUPABASE_URL,
-  SUPABASE_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULTS.SUPABASE_KEY,
+  SUPABASE_URL: getConfig('VITE_SUPABASE_URL', 'SUPABASE_URL'),
+  SUPABASE_KEY: getConfig('VITE_SUPABASE_ANON_KEY', 'SUPABASE_KEY'),
 };
 
-// Runtime validation for critical configurations
-function validateConfig() {
-  if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_KEY) {
-    throw new Error("Supabase configuration is missing! Please check your environment variables.");
+// Runtime validation: throw if critical config is missing
+function validateConfig(cfg) {
+  if (!cfg.SUPABASE_URL || !cfg.SUPABASE_KEY) {
+    throw new Error(
+      '[Config Error] Supabase credentials are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment.'
+    );
   }
-  if (!CONFIG.PI_APP_ID) {
-    throw new Error("Pi Network App ID is missing! Please check your environment variables.");
+  if (!cfg.PI_APP_ID) {
+    throw new Error(
+      '[Config Error] Pi Network App ID is missing. Please set VITE_PI_APP_ID in your environment.'
+    );
   }
 }
 
-// Immediately validate the configuration
-validateConfig();
+// Only validate in runtime (not during tests/builds)
+if (typeof window !== 'undefined') {
+  validateConfig(CONFIG);
+}
 
 export default CONFIG;
