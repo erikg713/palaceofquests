@@ -6,6 +6,33 @@ export default function Inventory({ userId }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+// Example snippet inside a Shop or ItemCard component
+import PiPaymentButton from '../components/PiPaymentButton';
+import { useUserInventory } from '../hooks/useUserInventory';
+
+const ShopItem = ({ item, userId, onEquip }) => {
+  const { addItem } = useUserInventory(userId);
+
+  return (
+    <PiPaymentButton
+      amount={1}
+      memo={`Buy ${item.name}`}
+      metadata={{ itemId: item.id, type: 'purchase' }}
+      onPaymentComplete={() => {
+        alert(`${item.name} purchased with Pi!`);
+        onEquip?.(item);
+        addItem({
+          id: item.id,
+          name: item.name,
+          rarity: item.rarity,
+          icon: item.icon,
+        });
+      }}
+    />
+  );
+};
+
+export default ShopItem;
 
   useEffect(() => {
     if (!userId) return;
