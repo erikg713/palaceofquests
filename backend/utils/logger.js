@@ -1,4 +1,6 @@
-// backend/utils/logger.js
+const logger = require('./utils/logger');
+logger.info('Service started');
+logger.error({ err }, 'An error occurred');
 const pino = require('pino');
 
 const logger = pino({
