@@ -1,96 +1,22 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import AchievementGallery from './components/AchievementGallery';
-// Context Providers
-import { PiAuthProvider } from './context/PiAuthContext';
-import { PlayerProvider } from './context/PlayerContext';
-// Pages
-import Home from './pages/Home';
-import Quests from './pages/Quests';
-import Marketplace from './pages/Marketplace';
-import InventoryPage from './pages/InventoryPage';
-import WorldHub from './pages/WorldHub';
-import WorldMapPage from './pages/WorldMapPage';
-import NPCPage from './pages/NPCPage';
-// Components
-import Navbar from './components/Navbar';
-import QuestLog from './components/QuestLog';
-import LanguageToggle from './components/LanguageToggle';
-import GameOverlay from './components/GameOverlay';
-// Hooks
-import { usePiAuth } from './hooks/usePiAuth';
+import React, { useEffect, useState } from 'react';
+import Dashboard from './components/Dashboard';
 
-const App = () => {
-  const { user, loginWithPi, unlockQuest } = usePiAuth();
+export default function App() {
+  const [user, setUser] = useState(null);
 
-  return (
-    <PiAuthProvider>
-      <PlayerProvider>
-        <Router>
-          <Navbar />
-          <div className="App">
-            <LanguageToggle />
-            <h1>Palace of Quests</h1>
+  useEffect(() => {
+    const Pi = window.Pi;
+    Pi.authenticate(['username'], () => {}).then(async (auth) => {
+      const res = await fetch('http://localhost:5000/auth/pi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: auth.accessToken }),
+      });
 
-            {user ? (
-              <div>
-                <p>Welcome, {user.username}!</p>
-                <QuestLog uid={user.uid} />
-                <button type="button" onClick={unlockQuest}>
-                  Unlock Dragon Quest
-                </button>
-              </div>
-            ) : (
-              <button type="button" onClick={loginWithPi}>
-                Login with Pi Wallet
-              </button>
-            )}
-import React, { Suspense, lazy } from 'react';
+      const data = await res.json();
+      setUser(data);
+    });
+  }, []);
 
-const AchievementGallery = lazy(() => import('./components/AchievementGallery'));
-
-function App() {
-  return (
-    <div className="App">
-      {/* Other components */}
-      <Suspense fallback={<div>Loading achievements...</div>}>
-        <AchievementGallery />
-      </Suspense>
-    </div>
-  );
+  return user ? <Dashboard user={user} /> : <div>Authenticating Pi user...</div>;
 }
-
-export default App;
-            <Routes>
-              <Route path="/" element={<WorldHub />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/quests" element={<Quests />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/inventory" element={<InventoryPage />} />
-              <Route path="/map" element={<WorldMapPage />} />
-              <Route path="/npcs" element={<NPCPage />} />
-              <Route
-                path="/hud"
-                element={
-                  <GameOverlay>
-                    <p>Welcome to the arena.</p>
-                  </GameOverlay>
-                }
-              />
-            </Routes>
-          </div>
-        </Router>
-      </PlayerProvider>
-    </PiAuthProvider>
-  );
-};
-function App() {
-  return (
-    <div className="App">
-      {/* Other components, header, etc. */}
-      <AchievementGallery />
-      {/* Other content */}
-    </div>
-  );
-}
-export default App;
