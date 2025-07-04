@@ -1,4 +1,14 @@
-// backend/routes/inventory.js
+// routes/inventory.js
+import express from 'express';
+import { getInventory, addItem } from '../controllers/inventoryController.js';
+import { requirePiAuth } from '../middleware/piAuth.js';
+
+const router = express.Router();
+
+router.get('/', requirePiAuth, getInventory);
+router.post('/', requirePiAuth, addItem);
+
+export default router;
 
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
