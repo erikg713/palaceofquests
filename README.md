@@ -64,6 +64,8 @@ cd palace-of-quests-frontend
 npm install
 npm install react-router-dom axios @fortawesome/react-fontawesome dotenv
 npm run dev
+npm install express cors dotenv body-parser axios jsonwebtoken
+
 ```
 
 **Project structure:**
