@@ -1,23 +1,20 @@
+// backend/auth.js
+const { query } = require('./db');
 const fetch = require('node-fetch');
-const db = require('./db');
-
-async function verifyPiUser(accessToken) {
-  const res = await fetch('https://api.minepi.com/user/me', {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  const user = await res.json();
-  return user;
-}
 
 async function loginUser(req, res) {
   const { accessToken } = req.body;
   try {
-    const user = await verifyPiUser(accessToken);
-    const { uid, username } = user;
+    const piUser = await fetch('https://api.minepi.com/user/me', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    }).then(res => res.json());
 
-    let result = await db.query('SELECT * FROM players WHERE pi_uid = $1', [uid]);
+    const { uid, username } = piUser;
+
+    const result = await query('SELECT * FROM players WHERE pi_uid = $1', [uid]);
+
     if (result.rowCount === 0) {
-      await db.query(
+      await query(
         'INSERT INTO players (pi_uid, username, level, experience) VALUES ($1, $2, 1, 0)',
         [uid, username]
       );
@@ -25,9 +22,9 @@ async function loginUser(req, res) {
 
     res.status(200).json({ uid, username });
   } catch (err) {
-    res.status(401).json({ error: 'Invalid token or user not found' });
+    console.error('[AUTH] Error:', err);
+    res.status(401).json({ error: 'Unauthorized' });
   }
 }
 
 module.exports = { loginUser };
-
