@@ -51,3 +51,36 @@ router.post('/payment/complete', async (req, res) => {
 });
 
 module.exports = router;
+
+const express = require('express');
+const router = express.Router();
+const axios = require('axios');
+
+const PI_APP_SECRET = process.env.PI_APP_SECRET;
+
+router.post('/complete', async (req, res) => {
+  const { paymentId } = req.body;
+
+  try {
+    const response = await axios.get(
+      `https://api.minepi.com/v2/payments/${paymentId}`,
+      {
+        headers: { Authorization: `Key ${PI_APP_SECRET}` },
+      }
+    );
+
+    const payment = response.data;
+
+    if (payment.status === 'completed') {
+      // ✅ Reward the user here (DB credit, product unlock, etc.)
+      return res.json({ success: true, payment });
+    } else {
+      return res.status(400).json({ error: 'Payment not completed' });
+    }
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Failed to verify payment' });
+  }
+});
+
+module.exports = router;
