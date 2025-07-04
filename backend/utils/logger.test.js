@@ -2,7 +2,10 @@
 const pino = require('pino');
 const stream = require('stream');
 const logger = require('./logger');
+const logger = require('./utils/logger');
 
+logger.info({ userId: 123, route: '/auth' }, 'User authenticated');
+logger.error(new Error('DB failed'), 'Database error encountered');
 describe('Logger', () => {
   let output;
   let writable;
