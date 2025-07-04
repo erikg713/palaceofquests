@@ -1,45 +1,39 @@
-const jwt = require('jsonwebtoken');
+/**
+ * Verify Pi Network Access Token using only Pi Network official endpoints.
+ * No JWT libraries are used.
+ * Returns user profile data if valid, throws error if invalid.
+ */
+
 const axios = require('axios');
 
-let cachedKey = null;
-
-async function getPiPublicKey() {
-  if (cachedKey) return cachedKey;
-  const res = await axios.get('https://api.minepi.com/pi/users/public_key');
-  cachedKey = res.data;
-  return cachedKey;
-}
-
-module.exports = async function verifyPiToken(token) {
-  const publicKey = await getPiPublicKey();
-  return jwt.verify(token, publicKey, { algorithms: ['ES256'] });
-};
-
-
-const jwt = require('jsonwebtoken');
-const axios = require('axios');
-
-let cachedPublicKey = null;
-
-async function getPiPublicKey() {
-  if (cachedPublicKey) return cachedPublicKey;
-
-  const res = await axios.get('https://api.minepi.com/pi/users/public_key');
-  cachedPublicKey = res.data;
-  return cachedPublicKey;
-}
-
-module.exports = async function verifyPiToken(accessToken) {
-  const publicKey = await getPiPublicKey();
+/**
+ * Verifies a Pi Network access token by querying the official Pi verification endpoint.
+ * @param {string} accessToken - The Pi Network access token to verify.
+ * @returns {Promise<Object>} The Pi user object (uid, username, wallet, etc.) if valid.
+ * @throws {Error} If the access token is invalid or request fails.
+ */
+async function verifyPiToken(accessToken) {
+  if (!accessToken) throw new Error('No access token provided.');
 
   try {
-    const decoded = jwt.verify(accessToken, publicKey, {
-      algorithms: ['ES256'],
+    // Per Pi Network docs: token is sent as Bearer in Authorization header
+    const res = await axios.get('https://api.minepi.com/v2/me', {
+      headers: { Authorization: `Bearer ${accessToken}` }
     });
 
-    return decoded; // Contains: uid, username, user_wallet_address
+    // Expecting user profile object on success
+    if (res.data && res.data.uid) {
+      return res.data;
+    } else {
+      throw new Error('Invalid Pi access token or missing user data.');
+    }
   } catch (err) {
-    throw new Error('Invalid access token');
+    // Handle network and Pi API errors gracefully
+    if (err.response && err.response.status === 401) {
+      throw new Error('Unauthorized: Invalid or expired Pi access token.');
+    }
+    throw new Error(`Pi Network verification failed: ${err.message}`);
   }
-};
+}
 
+module.exports = verifyPiToken;
