@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from 'react';
+import React, { useState, useContext, useCallback, useMemo } from 'react';
 import { usePlayer } from '../context/PlayerContext';
 import { PiWalletContext } from '../context/PiWalletContext';
 import PiPaymentModal from '../components/PiPaymentModal';
@@ -11,42 +11,59 @@ export default function WorldHub() {
   const { player } = usePlayer();
   const { walletAddress, piUser } = useContext(PiWalletContext);
 
-  const [state, setState] = useState({
-    showPayModal: false,
-    showReward: false,
-    loot: null,
-    loading: false,
-    error: '',
-  });
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [showReward, setShowReward] = useState(false);
+  const [loot, setLoot] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const API_BASE = useMemo(() => import.meta.env.VITE_API_BASE_URL, []);
+  const unlockUrl = useMemo(() => `${API_BASE}/unlock-realm`, [API_BASE]);
+  const lootUrl = useMemo(() => `${API_BASE}/grant-loot`, [API_BASE]);
+  const fetchOptions = useMemo(() => ({
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user: piUser, realm: REALM.id })
+  }), [piUser]);
 
   const handleUnlockRealm = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: '' }));
+    setLoading(true);
+    setError('');
     try {
       const [unlockRes, lootRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/unlock-realm`, { ... }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/grant-loot`, { ... }),
+        fetch(unlockUrl, fetchOptions),
+        fetch(lootUrl, fetchOptions)
       ]);
+
+      if (!unlockRes.ok) throw new Error('Unlock failed');
+      if (!lootRes.ok) throw new Error('Loot grant failed');
       const lootData = await lootRes.json();
-      setState((prev) => ({
-        ...prev,
-        loot: lootData.granted || null,
-        showReward: true,
-        showPayModal: false,
-      }));
-    } catch {
-      setState((prev) => ({ ...prev, error: 'Failed to unlock the realm. Please try again.' }));
+      setLoot(lootData.granted || null);
+      setShowReward(true);
+      setShowPayModal(false);
+    } catch (err) {
+      setError(
+        typeof err?.message === 'string'
+          ? err.message
+          : 'Failed to unlock the realm. Please try again.'
+      );
     } finally {
-      setState((prev) => ({ ...prev, loading: false }));
+      setLoading(false);
     }
-  }, [piUser]);
-  
+  }, [unlockUrl, lootUrl, fetchOptions]);
+
   if (!walletAddress) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">...</div>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        {/* Wallet connection UI here */}
+      </div>
     );
   }
 
   return (
-    <div className="min-h-[70vh] flex flex-col items-center py-12">...</div>
+    <div className="min-h-[70vh] flex flex-col items-center py-12">
+      {/* Main WorldHub UI goes here */}
+      {/* Use showPayModal, showReward, loot, loading, error as needed */}
+    </div>
   );
 }
