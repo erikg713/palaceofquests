@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const app = express();
+app.use('/payment', require('./routes/payment'));
 
 app.use(cors());
 app.use(bodyParser.json());
