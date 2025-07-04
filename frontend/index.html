@@ -1,3 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Palace of Quests</title>
+    <script>
+      window.globalThis ||= window;
+    </script>
+    <script>
+      var __PICONFIG__ = {
+        backendURL: 'https://socialchain.app',
+        landingPageURL: 'https://minepi.com',
+        horizon: {
+          mainnetUrl: 'https://api.mainnet.minepi.com',
+          mainnetNetworkPassphrase: 'Pi Network',
+          testnetUrl: 'https://api.testnet.minepi.com',
+          testnetNetworkPassphrase: 'Pi Testnet'
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 <script>
   async function startPiAuth() {
