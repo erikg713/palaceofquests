@@ -2,6 +2,31 @@ import React, { useEffect, useState } from 'react';
 import Dashboard from './components/Dashboard';
 import Unauthorized from './components/Unauthorized'; // Create this
 import Loading from './components/Loading'; // Create this
+// server.js or routes/auth.js
+const express = require('express');
+const router = express.Router();
+const verifyPiToken = require('../utils/verifyPiToken'); // You write this
+
+router.post('/auth/pi', async (req, res) => {
+  const { accessToken } = req.body;
+
+  try {
+    const piUser = await verifyPiToken(accessToken); // Returns { username, uid }
+
+    // Fetch from DB or mock a role
+    const user = {
+      username: piUser.username,
+      uid: piUser.uid,
+      role: piUser.username === 'admin_user' ? 'admin' : 'user', // Simple logic
+    };
+
+    res.json(user);
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid Pi token' });
+  }
+});
+
+module.exports = router;
 
 export default function App() {
   const [user, setUser] = useState(null);
