@@ -9,3 +9,8 @@ describe('Logger', () => {
     expect(() => logger.error({ err: new Error('fail') }, 'Failed')).not.toThrow();
   });
 });
+jest.mock('./logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+}));
