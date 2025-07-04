@@ -1,6 +1,24 @@
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 
+let cachedKey = null;
+
+async function getPiPublicKey() {
+  if (cachedKey) return cachedKey;
+  const res = await axios.get('https://api.minepi.com/pi/users/public_key');
+  cachedKey = res.data;
+  return cachedKey;
+}
+
+module.exports = async function verifyPiToken(token) {
+  const publicKey = await getPiPublicKey();
+  return jwt.verify(token, publicKey, { algorithms: ['ES256'] });
+};
+
+
+const jwt = require('jsonwebtoken');
+const axios = require('axios');
+
 let cachedPublicKey = null;
 
 async function getPiPublicKey() {
