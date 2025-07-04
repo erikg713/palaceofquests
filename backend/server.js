@@ -1,58 +1,50 @@
-const express = require('express');
-const cors = require('cors');
-const { loginUser } = require('./auth');
-const players = require('./routes/players');
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+// backend/server.js
+
 require('dotenv').config();
-const logger = require('./utils/logger');
+
+const express = require('express');
+const cors = require('cors');
+const players = require('./routes/players');
+const payment = require('./routes/payment');
+const auth = require('./routes/auth');
+const { httpLogger, logger } = require('./utils/logger');
+const { loginUser } = require('./auth');
 
 const app = express();
 
-app.use((req, res, next) => {
-  logger.info({ method: req.method, url: req.url }, 'Incoming request');
-  next();
-});
-const app = express();
-app.use('/payment', require('./routes/payment'));
+// HTTP request logging
+app.use(httpLogger);
 
+// Enable CORS
 app.use(cors());
-app.use(bodyParser.json());
 
-// Routes
-app.use('/auth', require('./routes/auth'));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-const app = express();
-app.use(cors());
+// Parse JSON bodies
 app.use(express.json());
 
-app.post('/auth/pi', loginUser);
-app.use('/players', players);
-
-app.listen(5000, () => console.log('Server running on http://localhost:5000'));
-// backend/app.js
-const express = require('express');
-const { httpLogger, logger } = require('./utils/logger');
-
-const app = express();
-
-app.use(httpLogger); // HTTP request logging
-
+// Health check endpoint
 app.get('/health', (req, res) => {
   logger.info({ route: '/health' }, 'Health check endpoint hit');
   res.json({ status: 'ok' });
 });
 
-// ... other routes
+// Auth endpoints
+app.use('/auth', auth);
+app.post('/auth/pi', loginUser);
 
-// Error handling (logs errors)
+// Player and payment endpoints
+app.use('/players', players);
+app.use('/payment', payment);
+
+// Centralized error handler
 app.use((err, req, res, next) => {
   logger.error({ err, url: req.url }, 'Unhandled error');
   res.status(500).json({ error: 'Internal Server Error' });
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
