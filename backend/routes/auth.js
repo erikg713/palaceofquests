@@ -110,3 +110,31 @@ async function loginUser(req, res) {
 }
 
 module.exports = { loginUser };
+
+const express = require('express');
+const router = express.Router();
+const verifyPiToken = require('../utils/verifyPiToken');
+
+router.post('/auth/pi', async (req, res) => {
+  const { accessToken } = req.body;
+
+  try {
+    const piUser = await verifyPiToken(accessToken);
+
+    // Example role assignment — from DB or logic
+    const user = {
+      uid: piUser.uid,
+      username: piUser.username,
+      wallet: piUser.user_wallet_address,
+      role: piUser.username === 'admin_user' ? 'admin' : 'user',
+    };
+
+    // Optional: set session cookie / JWT
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ error: 'Authentication failed' });
+  }
+});
+
+module.exports = router;
