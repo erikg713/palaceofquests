@@ -6,7 +6,14 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+const logger = require('./utils/logger');
 
+const app = express();
+
+app.use((req, res, next) => {
+  logger.info({ method: req.method, url: req.url }, 'Incoming request');
+  next();
+});
 const app = express();
 app.use('/payment', require('./routes/payment'));
 
