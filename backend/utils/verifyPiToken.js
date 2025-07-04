@@ -2,23 +2,20 @@
 
 const axios = require('axios');
 const pino = require('pino');
+const jwt = require('jsonwebtoken');
 
-// Create a logger instance
+// Logger setup
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
-// Simple in-memory rate limiter per IP/token (production: use Redis or similar)
+// Simple in-memory rate limiter (for production, use Redis or similar)
 const rateLimitWindowMs = 60 * 1000; // 1 minute
 const maxRequestsPerWindow = 30;
 const rateLimitMap = new Map();
 
-/**
- * Returns true if the token has exceeded its rate limit.
- */
 function isRateLimited(token) {
   const now = Date.now();
   const entry = rateLimitMap.get(token) || { count: 0, start: now };
   if (now - entry.start > rateLimitWindowMs) {
-    // Reset window
     rateLimitMap.set(token, { count: 1, start: now });
     return false;
   }
@@ -28,31 +25,35 @@ function isRateLimited(token) {
   return false;
 }
 
+// Fetch and cache Pi Network public key for JWT verification
+let cachedKey = null;
+async function getPiPublicKey() {
+  if (cachedKey) return cachedKey;
+  const res = await axios.get('https://api.minepi.com/pi/users/public_key');
+  cachedKey = res.data;
+  return cachedKey;
+}
+
 /**
- * Verifies a Pi Network access token via the official API.
- * Logs actions, rate limits requests, and provides detailed error handling.
- * @param {string} accessToken - Pi Network access token (Bearer JWT from client).
- * @returns {Promise<Object>} - User profile object from Pi Network if valid.
- * @throws {Error} - If rate limited, invalid, or on network error.
+ * Verify Pi Network access token via API (returns user profile on success)
+ * @param {string} accessToken - Pi Network access token (Bearer JWT from client)
+ * @returns {Promise<Object>} - User profile object
  */
-async function verifyPiToken(accessToken) {
+async function verifyPiTokenWithAPI(accessToken) {
   if (!accessToken) {
-    logger.warn('verifyPiToken called without accessToken');
+    logger.warn('verifyPiTokenWithAPI called without accessToken');
     throw new Error('No access token provided.');
   }
-
   if (isRateLimited(accessToken)) {
     logger.warn({ token: accessToken }, 'Rate limit exceeded for token');
     throw new Error('Too many verification requests. Please try again later.');
   }
-
   try {
     logger.info('Verifying Pi token via Pi Network API');
     const response = await axios.get('https://api.minepi.com/v2/me', {
       headers: { Authorization: `Bearer ${accessToken}` },
       timeout: 4000
     });
-
     if (response.data && response.data.uid) {
       logger.info({ uid: response.data.uid }, 'Pi token verified successfully');
       return response.data;
@@ -73,21 +74,30 @@ async function verifyPiToken(accessToken) {
     }
   }
 }
-const jwt = require('jsonwebtoken');
-const axios = require('axios');
 
-let cachedKey = null;
-
-async function getPiPublicKey() {
-  if (cachedKey) return cachedKey;
-  const res = await axios.get('https://api.minepi.com/pi/users/public_key');
-  cachedKey = res.data;
-  return cachedKey;
+/**
+ * Verify Pi Network access token as JWT (returns decoded payload on success)
+ * @param {string} token - Pi Network JWT
+ * @returns {Promise<Object>} - Decoded JWT payload
+ */
+async function verifyPiTokenJWT(token) {
+  if (!token) {
+    logger.warn('verifyPiTokenJWT called without token');
+    throw new Error('No token provided.');
+  }
+  const publicKey = await getPiPublicKey();
+  try {
+    const decoded = jwt.verify(token, publicKey, { algorithms: ['ES256'] });
+    logger.info({ uid: decoded.uid }, 'Pi JWT verified successfully');
+    return decoded;
+  } catch (err) {
+    logger.error({ error: err.message }, 'JWT verification failed');
+    throw new Error('Invalid or expired Pi JWT: ' + err.message);
+  }
 }
 
-module.exports = async function verifyPiToken(token) {
-  const publicKey = await getPiPublicKey();
-  return jwt.verify(token, publicKey, { algorithms: ['ES256'] });
+// Export both methods for flexibility
+module.exports = {
+  verifyPiTokenWithAPI,
+  verifyPiTokenJWT
 };
-
-module.exports = verifyPiToken;
