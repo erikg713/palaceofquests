@@ -34,3 +34,25 @@ app.post('/auth/pi', loginUser);
 app.use('/players', players);
 
 app.listen(5000, () => console.log('Server running on http://localhost:5000'));
+// backend/app.js
+const express = require('express');
+const { httpLogger, logger } = require('./utils/logger');
+
+const app = express();
+
+app.use(httpLogger); // HTTP request logging
+
+app.get('/health', (req, res) => {
+  logger.info({ route: '/health' }, 'Health check endpoint hit');
+  res.json({ status: 'ok' });
+});
+
+// ... other routes
+
+// Error handling (logs errors)
+app.use((err, req, res, next) => {
+  logger.error({ err, url: req.url }, 'Unhandled error');
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
+module.exports = app;
