@@ -4,6 +4,27 @@ import { PiWalletContext } from '../context/PiWalletContext';
 import PiPaymentModal from '../components/PiPaymentModal';
 import RewardModal from '../components/RewardModal';
 import PiPaymentButton from '../components/PiPaymentButton';
+// src/pages/WorldHub.jsx
+import React from 'react';
+import PiPaymentButton from '../components/PiPaymentButton';
+
+const WorldHub = () => {
+  return (
+    <div className="p-4">
+      {/* ...Teleport and other UI... */}
+
+      {/* Pi Payment for Launch Access */}
+      <PiPaymentButton
+        amount={1}
+        memo="Launch Protocol Alpha"
+        metadata={{ realm: 'Moon Fortress', type: 'launch' }}
+        onPaymentComplete={() => alert('🚀 Launch fee paid. Teleport unlocked!')}
+      />
+    </div>
+  );
+};
+
+export default WorldHub;
 
 const REALM = {
   id: 'moon_fortress',
