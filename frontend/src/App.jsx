@@ -20,3 +20,4 @@ export default function App() {
 
   return user ? <Dashboard user={user} /> : <div>Authenticating Pi user...</div>;
 }
+const Pi = window.Pi;
