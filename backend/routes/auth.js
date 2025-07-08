@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Dashboard from './components/Dashboard';
-import Unauthorized from './components/Unauthorized'; // Create this
-import Loading from './components/Loading'; // Create this
-// server.js or routes/auth.js
+import Unauthorized from './components/Unauthorized'; 
+import Loading from './components/Loading'; 
+const express = require('express');
+const piAuthMiddleware = require('../middleware/piAuthMiddleware');
+const { getProfile } = require('../controllers/authController');
+
+const router = express.Router();
+
+router.get('/me', piAuthMiddleware, getProfile);
+
+module.exports = router;
+
 const express = require('express');
 const router = express.Router();
 const verifyPiToken = require('../utils/verifyPiToken'); // You write this
