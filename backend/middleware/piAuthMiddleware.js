@@ -2,6 +2,45 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyPiToken } from '../utils/piVerifier'; // Verifies token using Pi SDK (your utility)
 import User from '../models/User';
 import logger from '../utils/logger';
+import jwt from 'jsonwebtoken';
+
+/**
+ * Middleware to verify Pi Network JWT from frontend authentication
+ * Expects a valid token in Authorization header as: Bearer <token>
+ */
+export const piAuthMiddleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Missing or invalid Authorization header' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    // Replace with your actual Pi App Secret
+    const PI_APP_SECRET = process.env.PI_APP_SECRET;
+
+    if (!PI_APP_SECRET) {
+      throw new Error('Pi App secret is not configured.');
+    }
+
+    // Verify and decode the JWT token from Pi Network SDK
+    const decoded = jwt.verify(token, PI_APP_SECRET, { algorithms: ['HS256'] });
+
+    // Attach user to request object
+    req.user = {
+      uid: decoded.uid,
+      username: decoded.user?.username,
+      roles: decoded.metadata?.roles || [], // Optional: if you're assigning custom roles
+    };
+
+    next();
+  } catch (err) {
+    console.error('Pi auth failed:', err.message);
+    return res.status(403).json({ message: 'Unauthorized: Invalid or expired Pi token' });
+  }
+};
 
 export const piAuthMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
