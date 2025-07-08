@@ -1,4 +1,12 @@
-// backend/server.js
+const express = require('express');
+const corsMiddleware = require('./middleware/corsMiddleware');
+
+const app = express();
+
+app.use(corsMiddleware);
+
+// Your routes go here
+app.use('/api/users', require('./routes/userRoutes'));
 
 require('dotenv').config();
 
