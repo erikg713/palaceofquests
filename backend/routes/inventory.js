@@ -17,8 +17,7 @@ const router = express.Router();
 // Example: swap this for your real controller
 // const InventoryController = require('../controllers/inventoryController');
 
-// DRY async wrapper for cleaner error handling
-function asyncHandler(fn) {
+// DRY async wrapper for cleaner error handling function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
 
@@ -91,3 +90,4 @@ router.delete(
 );
 
 module.exports = router;
+function fetch pi.authenticate()
