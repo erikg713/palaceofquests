@@ -5,6 +5,13 @@ import Loading from './components/Loading';
 const express = require('express');
 const piAuthMiddleware = require('../middleware/piAuthMiddleware');
 const { getProfile } = require('../controllers/authController');
+const express = require('express');
+const router = express.Router();
+const { loginUser } = require('../controllers/authController');
+
+router.post('/pi', loginUser);
+
+module.exports = router;
 
 const router = express.Router();
 
