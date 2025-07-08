@@ -3,42 +3,56 @@ const User = require('../models/User');
 const logger = require('../utils/logger');
 
 /**
- * Middleware to authenticate Pi Network users by verifying their access token via the Pi API.
- * Accepts token via Authorization: Bearer <token> or x-pi-auth header.
+ * Hardened Pi Network auth middleware.
+ * Verifies token against Pi API and manages user provisioning.
  */
 const piAuthMiddleware = async (req, res, next) => {
   try {
-    const token =
-      req.header('Authorization')?.replace('Bearer ', '') ||
-      req.headers['x-pi-auth'];
+    const rawAuthHeader = req.headers['authorization'];
+    const fallbackHeader = req.headers['x-pi-auth'];
 
-    if (!token || typeof token !== 'string') {
-      return res.status(401).json({ message: 'Pi token missing' });
+    // Extract token from headers
+    let token = null;
+    if (rawAuthHeader && rawAuthHeader.startsWith('Bearer ')) {
+      token = rawAuthHeader.split(' ')[1];
+    } else if (typeof fallbackHeader === 'string') {
+      token = fallbackHeader;
     }
 
+    if (!token) {
+      logger.warn('Missing Pi token');
+      return res.status(401).json({ message: 'Unauthorized: No Pi token provided.' });
+    }
+
+    // Verify token with Pi API
     const piUser = await verifyPiTokenWithAPI(token);
 
     if (!piUser || !piUser.uid) {
-      return res.status(401).json({ message: 'Invalid Pi token or user not found' });
+      logger.warn('Invalid or expired Pi token');
+      return res.status(401).json({ message: 'Unauthorized: Invalid Pi token' });
     }
 
-    // Look up user in DB, or create a new one if not found
+    // Provision user from DB or create if needed
     let user = await User.findOne({ uid: piUser.uid });
     if (!user) {
       user = await User.create({
         uid: piUser.uid,
         username: piUser.username,
         wallet: piUser.wallet_address || null,
-        role: 'user', // default role
+        role: 'user', // Default role
+        createdAt: new Date(),
       });
+      logger.info({ uid: user.uid }, 'User created via Pi auth');
     }
 
+    // Attach full user to request object
     req.user = user;
     next();
-  } catch (error) {
-    logger.error('Pi Network auth failed', { error });
-    res.status(401).json({ message: 'Pi authentication failed.' });
+  } catch (err) {
+    logger.error('Pi auth failed', { error: err.message || err });
+    return res.status(401).json({ message: 'Pi authentication failed. Please log in again.' });
   }
 };
 
 module.exports = piAuthMiddleware;
+
