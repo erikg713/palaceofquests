@@ -1,93 +1,83 @@
-// routes/inventory.js
 import express from 'express';
-import { getInventory, addItem } from '../controllers/inventoryController.js';
+import { body, param, validationResult } from 'express-validator';
 import { requirePiAuth } from '../middleware/piAuth.js';
+import InventoryController from '../controllers/inventoryController.js';
 
 const router = express.Router();
 
-router.get('/', requirePiAuth, getInventory);
-router.post('/', requirePiAuth, addItem);
+// Async error wrapper
+const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-export default router;
-
-const express = require('express');
-const { body, param, validationResult } = require('express-validator');
-const router = express.Router();
-
-// Example: swap this for your real controller
-// const InventoryController = require('../controllers/inventoryController');
-
-// DRY async wrapper for cleaner error handling function asyncHandler(fn) {
-  return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
-}
+// Validation error catcher
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next();
+};
 
 // GET /inventory - list all items
 router.get(
   '/',
+  requirePiAuth,
   asyncHandler(async (req, res) => {
-    // const items = await InventoryController.getAllItems();
-    const items = []; // replace with real data
+    const items = await InventoryController.getAllItems(req.user.uid);
     res.json(items);
   })
 );
 
-// GET /inventory/:id - fetch one item
+// GET /inventory/:id - get one item by id
 router.get(
   '/:id',
+  requirePiAuth,
   param('id').isString().trim().notEmpty(),
+  validate,
   asyncHandler(async (req, res) => {
-    validationResult(req).throw();
-    const { id } = req.params;
-    // const item = await InventoryController.getItemById(id);
-    const item = null; // replace with real data
+    const item = await InventoryController.getItemById(req.params.id, req.user.uid);
     if (!item) return res.status(404).json({ error: 'Item not found' });
     res.json(item);
   })
 );
 
-// POST /inventory - create item
+// POST /inventory - add new item
 router.post(
   '/',
+  requirePiAuth,
   body('name').isString().trim().notEmpty(),
-  // Add more validation as needed
+  // Add more validation if needed
+  validate,
   asyncHandler(async (req, res) => {
-    validationResult(req).throw();
-    const newItem = req.body;
-    // const created = await InventoryController.createItem(newItem);
-    const created = newItem; // replace with real logic
+    const created = await InventoryController.createItem({ ...req.body, ownerUid: req.user.uid });
     res.status(201).json(created);
   })
 );
 
-// PUT /inventory/:id - update item
+// PUT /inventory/:id - update item by id
 router.put(
   '/:id',
+  requirePiAuth,
   param('id').isString().trim().notEmpty(),
   body('name').optional().isString().trim().notEmpty(),
+  validate,
   asyncHandler(async (req, res) => {
-    validationResult(req).throw();
-    const { id } = req.params;
-    const updates = req.body;
-    // const updated = await InventoryController.updateItem(id, updates);
-    const updated = updates; // replace with real logic
-    if (!updated) return res.status(404).json({ error: 'Item not found' });
+    const updated = await InventoryController.updateItem(req.params.id, req.body, req.user.uid);
+    if (!updated) return res.status(404).json({ error: 'Item not found or no permission' });
     res.json(updated);
   })
 );
 
-// DELETE /inventory/:id - delete item
+// DELETE /inventory/:id - delete item by id
 router.delete(
   '/:id',
+  requirePiAuth,
   param('id').isString().trim().notEmpty(),
+  validate,
   asyncHandler(async (req, res) => {
-    validationResult(req).throw();
-    const { id } = req.params;
-    // const deleted = await InventoryController.deleteItem(id);
-    const deleted = true; // replace with real logic
-    if (!deleted) return res.status(404).json({ error: 'Item not found' });
+    const deleted = await InventoryController.deleteItem(req.params.id, req.user.uid);
+    if (!deleted) return res.status(404).json({ error: 'Item not found or no permission' });
     res.json({ message: 'Item deleted' });
   })
 );
 
-module.exports = router;
-function fetch pi.authenticate()
+export default router;
