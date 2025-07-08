@@ -1,49 +1,44 @@
-import { Request, Response, NextFunction } from 'express';
-import { verifyPiToken } from '../utils/piVerifier'; // Custom utility to verify Pi tokens
-import User from '../models/User'; // Mongoose or Sequelize model
-import logger from '../utils/logger';
+const { verifyPiTokenWithAPI } = require('../utils/verifyPiToken');
+const User = require('../models/User');
+const logger = require('../utils/logger');
 
 /**
- * Middleware to authenticate Pi Network users via JWT token.
- * Accepts: Authorization: Bearer <token> or x-pi-auth header.
+ * Middleware to authenticate Pi Network users by verifying their access token via the Pi API.
+ * Accepts token via Authorization: Bearer <token> or x-pi-auth header.
  */
-export const piAuthMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const piAuthMiddleware = async (req, res, next) => {
   try {
-    // Get token from Authorization header or x-pi-auth
     const token =
       req.header('Authorization')?.replace('Bearer ', '') ||
-      (req.headers['x-pi-auth'] as string);
+      req.headers['x-pi-auth'];
 
-    if (!token) {
-      res.status(401).json({ message: 'Missing Pi authentication token.' });
-      return;
+    if (!token || typeof token !== 'string') {
+      return res.status(401).json({ message: 'Pi token missing' });
     }
 
-    // Verify and decode the token using your custom verifier
-    const piPayload = await verifyPiToken(token);
+    const piUser = await verifyPiTokenWithAPI(token);
 
-    if (!piPayload || !piPayload.uid) {
-      res.status(401).json({ message: 'Invalid Pi token payload.' });
-      return;
+    if (!piUser || !piUser.uid) {
+      return res.status(401).json({ message: 'Invalid Pi token or user not found' });
     }
 
-    // Check if user exists in DB; if not, create a new user
-    let user = await User.findOne({ uid: piPayload.uid });
-
+    // Look up user in DB, or create a new one if not found
+    let user = await User.findOne({ uid: piUser.uid });
     if (!user) {
       user = await User.create({
-        uid: piPayload.uid,
-        username: piPayload.username,
+        uid: piUser.uid,
+        username: piUser.username,
+        wallet: piUser.wallet_address || null,
         role: 'user', // default role
-        wallet: piPayload.wallet_address || null,
       });
     }
 
-    // Attach user object to request
-    (req as any).user = user;
+    req.user = user;
     next();
   } catch (error) {
-    logger.error('Pi authentication failed', { error });
+    logger.error('Pi Network auth failed', { error });
     res.status(401).json({ message: 'Pi authentication failed.' });
   }
 };
+
+module.exports = piAuthMiddleware;
