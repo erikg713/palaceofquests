@@ -1,32 +1,36 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres
-    environment:
-      POSTGRES_DB: questsdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  backend:
-    build: ./backend
+  web:
+    build: .
     ports:
       - "5000:5000"
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/questsdb
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://palace_user:palace_pass@db:5432/palace_of_quests
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
+      - redis
+    volumes:
+      - .:/app
+    command: python run.py
 
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
+  db:
+    image: postgres:15
     environment:
-      - VITE_API_URL=http://localhost:5000
+      - POSTGRES_DB=palace_of_quests
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Palace713
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
 
 volumes:
-  pgdata:
+  postgres_data:
