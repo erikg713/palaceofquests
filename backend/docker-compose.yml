@@ -7,7 +7,7 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=postgresql://palace_user:palace_pass@db:5432/palace_of_quests
+      - DATABASE_URL=postgresql://postgres:Palace713@db:5432/palace_of_quests
       - REDIS_URL=redis://redis:6379/0
     depends_on:
       - db
