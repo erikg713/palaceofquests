@@ -52,6 +52,11 @@ git add .
 git commit -m "Initial Palace of Quests build"
 git push -u origin master
 ```
+### Initialize Tailwind ###
+```bash
+npx tailwindcss init -p
+```
+---
 
 ## Contributing 🤝
 Contributions are welcome! Please follow these steps:
