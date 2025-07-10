@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import './styles/ui.css';
 
+<Button variant="default">Enter Realm</Button>
 const HUD = memo(function HUD({ username, xp, coins }) {
   return (
     <div className="hud-panel" role="contentinfo" aria-label="User HUD">
