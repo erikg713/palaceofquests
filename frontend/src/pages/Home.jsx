@@ -107,3 +107,17 @@ export default function Home() {
     </section>
   );
 }
+import React from 'react';
+import { Link } from 'react-router-dom';
+import HUD from '../components/ui/HUD';
+
+export default function Home() {
+  return (
+    <div className="p-8">
+      <HUD username="Adventurer" xp={1200} coins={250} />
+      <Link to="/quests" className="mt-4 inline-block text-blue-600">
+        View Quests
+      </Link>
+    </div>
+  );
+}
