@@ -1,5 +1,17 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
+export default function QuestCard({ quest }) {
+  return (
+    <div className="border p-4 rounded shadow hover:shadow-lg transition">
+      <h2 className="text-xl">{quest.title}</h2>
+      <p>Reward: {quest.reward} Pi</p>
+      <Link to={`/quests/${quest.id}`} className="text-blue-500">
+        Details →
+      </Link>
+    </div>
+  );
+}
 export default function QuestCard({ quest, onStart, onComplete }) {
   const handleStart = () => {
     if (onStart) onStart(quest);
