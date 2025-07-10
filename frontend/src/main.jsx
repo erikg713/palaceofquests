@@ -8,7 +8,12 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './styles/ui.css';
 
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 
 // Utility for environment checks

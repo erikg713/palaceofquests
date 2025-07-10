@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Dashboard from './components/Dashboard';
 import Unauthorized from './components/Unauthorized';
 import Loading from './components/Loading';
+import Router from './router';
 
 export default function App() {
+  return <Router />;
+}
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);

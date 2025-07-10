@@ -70,27 +70,54 @@ npm install express cors dotenv body-parser axios jsonwebtoken
 
 **Project structure:**
 ```
-palace-of-quests-frontend/
-├── public/
-│   ├── index.html
-│   └── pi-app.json
-├── src/
-│   ├── assets/
-│   ├── components/
-│   │   ├── QuestCard.jsx
-│   │   ├── MarketplaceItem.jsx
-│   │   └── PiWalletLogin.jsx
-│   ├── pages/
-│   │   ├── Home.jsx
-│   │   ├── Quests.jsx
-│   │   └── Marketplace.jsx
-│   ├── App.jsx
-│   ├── main.jsx
-│   ├── piClient.js        # Pi SDK integration
-│   └── config.js          # Environment/config constants
-├── .env
-├── index.css
-├── vite.config.js
+project-root/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   └── questController.js
+│   │   ├── models/
+│   │   │   └── questModel.js
+│   │   ├── routes/
+│   │   │   └── quests.js
+│   │   └── index.js
+│   ├── package.json
+│   └── .env
+│
+├── database/
+│   ├── migrations/
+│   ├── seeds/
+│   └── prisma.schema   (or your ORM config)
+│
+├── frontend/
+│   ├── public/
+│   │   └── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ui/
+│   │   │   │   ├── Button.jsx
+│   │   │   │   ├── FadeOut.jsx
+│   │   │   │   └── HUD.jsx
+│   │   │   └── quest/
+│   │   │       ├── QuestCard.jsx
+│   │   │       └── QuestList.jsx
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Home.jsx
+│   │   │   ├── Quests.jsx
+│   │   │   └── QuestDetail.jsx
+│   │   │
+│   │   ├── router/
+│   │   │   └── index.jsx
+│   │   │
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   ├── styles/
+│   │   │   └── ui.css
+│   │   └── tailwind.config.js
+│   │
+│   ├── package.json
+│   └── vite.config.js
+│
 └── package.json
 ```
 
