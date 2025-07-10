@@ -7,7 +7,6 @@ import Router from './router';
 export default function App() {
   return <Router />;
 }
-export default function App() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
