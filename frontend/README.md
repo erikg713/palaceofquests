@@ -23,11 +23,17 @@ git clone https://github.com/YOUR_NAME/palace-of-quests.git
 cd palace-of-quests
 
 # Install dependencies
+```
 npm install react-unity-webgl
 npm install react-dnd react-dnd-html5-backend
 npm install three drei @react-three/fiber
 npm install three @react-three/fiber @react-three/drei
 npm create vite@latest frontend -- --template react-ts
+npm install tailwindcss postcss autoprefixer clsx tailwind-merge tailwindcss-animate
+npm install @radix-ui/react-dialog @radix-ui/react-tooltip @radix-ui/react-toast @radix-ui/react-avatar @radix-ui/react-tabs
+npm install react-hook-form zod @hookform/resolvers
+npm install lucide-react sonner
+```
 cd frontend
 npm install react-router-dom @supabase/supabase-js tailwindcss postcss autoprefixer
 npx tailwindcss init -p
