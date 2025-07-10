@@ -1,7 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import QuestCard from '../components/QuestCard';
 import { supabase } from '../api/supabaseClient';
+import React, { useEffect, useState } from 'react';
+import QuestList from '../components/quest/QuestList';
 
+export default function Quests() {
+  const [quests, setQuests] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:4000/api/quests')
+      .then(res => res.json())
+      .then(setQuests);
+  }, []);
+
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl mb-4">Available Quests</h1>
+      <QuestList quests={quests} />
+    </div>
+  );
+}
 export default function Quests({ userId }) {
   const [quests, setQuests] = useState([]);
   const [loading, setLoading] = useState(true);
