@@ -12,7 +12,7 @@ const HUD = memo(function HUD({ username, xp, coins }) {
     </div>
   );
 });
-
+<Button variant="default">Enter Realm</Button>
 HUD.propTypes = {
   username: PropTypes.string.isRequired,
   xp: PropTypes.number.isRequired,
