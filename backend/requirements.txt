@@ -6,7 +6,7 @@ Flask-JWT-Extended==4.5.3
 requests==2.32.4
 psycopg2-binary==2.9.7
 python-dotenv==1.0.0
-marshmallow==3.20.1
+marshmallow==3.26.2
 flask-marshmallow==0.15.0
 marshmallow-sqlalchemy==0.29.0
 celery==5.3.1
