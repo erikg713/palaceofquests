@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import './styles/ui.css';
+import '../styles/ui.css';
 // In ItemDetailModal.jsx
 const handleUse = async () => {
   await useItem(item, userId);

@@ -1,89 +1,84 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import MarketplaceItem from '../components/MarketplaceItem';
-import { supabase } from '../api/supabaseClient';
-import { buyMarketItem } from '../hooks/marketActions';
-import { Pi } from '@pi-apps/pi-sdk'; // if not globally loaded
+import PiPaymentButton from '../components/PiPaymentButton';
+import { inventoryData } from '../data/items';
 
-const handleBuyWithPi = async (item, userId) => {
-  Pi.createPayment({
-    amount: item.price,
-    memo: `Purchase: ${item.name}`,
-    metadata: { item_id: item.id },
-    onReadyForServerApproval: async (paymentId) => {
-      await fetch('/payment/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId }),
-      });
-    },
-    onReadyForServerCompletion: async (paymentId, txid) => {
-      await fetch('/payment/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId, txid }),
-      });
-
-      // Optionally update local inventory or refetch
-      alert(`✅ Bought ${item.name} with Pi!`);
-    },
-    onCancel: (paymentId) => {
-      console.log('Payment cancelled:', paymentId);
-    },
-    onError: (err, paymentId) => {
-      console.error('Pi SDK Error:', err);
-    }
-  });
+// Marketplace prices by rarity (Pi). The catalog is the game's own item
+// data; prices are local until the backend market_items table is connected.
+const PRICE_BY_RARITY = {
+  common: 1,
+  rare: 2,
+  epic: 5,
+  legendary: 10,
 };
 
-export default function Marketplace({ userId }) {
-  const [marketItems, setMarketItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+function catalog() {
+  return Object.entries(inventoryData).flatMap(([category, items]) =>
+    items.map((item) => ({
+      ...item,
+      type: category,
+      price: PRICE_BY_RARITY[item.rarity] ?? 1,
+      // No item art ships with the app yet; the card renders the item icon.
+      iconUrl: '',
+    }))
+  );
+}
 
-  const fetchMarketItems = async () => {
-    const { data, error } = await supabase
-      .from('market_items')
-      .select('id, price, items(*)') // include item details
-      .order('price', { ascending: true });
+export default function Marketplace() {
+  const [selected, setSelected] = useState(null);
+  const [notice, setNotice] = useState('');
+  const items = catalog();
 
-    if (error) {
-      console.error('Market fetch error:', error);
-    } else {
-      setMarketItems(data);
-    }
-
-    setLoading(false);
+  const handleBuy = (item) => {
+    setSelected(item);
+    setNotice('');
   };
 
-  const handleBuy = async (marketItem) => {
-    try {
-      await buyMarketItem(userId, marketItem);
-      alert(`✅ Purchased ${marketItem.items.name} for ${marketItem.price} Pi`);
-    } catch (err) {
-      console.error(err);
-      alert('❌ Purchase failed');
+  const handlePaymentComplete = () => {
+    if (selected) {
+      setNotice(`Bought ${selected.name} for ${selected.price} Pi.`);
+      setSelected(null);
     }
   };
-
-  useEffect(() => {
-    fetchMarketItems();
-  }, []);
 
   return (
-    <div className="marketplace-page">
+    <div className="marketplace-page py-8">
       <h2>🛒 Marketplace</h2>
-      {loading ? (
-        <p>Loading items...</p>
-      ) : (
-        <div className="marketplace-grid">
-          {marketItems.map((m) => (
-            <MarketplaceItem
-              key={m.id}
-              item={{ ...m.items, price: m.price }}
-              onBuy={() => handleBuy(m)}
-            />
-          ))}
+      <p className="text-sm text-gray-400 mb-4">
+        The palace market — prices in Pi. Purchases pay through Pi Browser;
+        server approval needs the backend, so a purchase completes in-app up
+        to that step until the backend is connected.
+      </p>
+      {notice && (
+        <div className="notice mb-4" role="status">
+          {notice}
         </div>
       )}
+      {selected && (
+        <div className="palace-card mb-4">
+          <p>
+            Buying <strong>{selected.name}</strong> for{' '}
+            <strong>{selected.price} Pi</strong>
+          </p>
+          <PiPaymentButton
+            amount={selected.price}
+            memo={`Purchase: ${selected.name}`}
+            metadata={{ item_id: selected.id }}
+            onPaymentComplete={handlePaymentComplete}
+          />
+          <button
+            className="quest-button secondary ml-3"
+            onClick={() => setSelected(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      <div className="marketplace-grid">
+        {items.map((item) => (
+          <MarketplaceItem key={item.id} item={item} onBuy={handleBuy} />
+        ))}
+      </div>
     </div>
   );
 }

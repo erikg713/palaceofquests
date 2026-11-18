@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Palace of Quests — explore realms, take quests, and trade loot on Pi Network." />
+  <meta name="author" content="Palace of Quests Team" />
+  <meta name="theme-color" content="#865DFF" />
+  <title>Palace of Quests</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/images/logo.png" />
+  <!-- Pi SDK 2.0: loaded before the app bundle so window.Pi exists at boot.
+       Authenticate only works inside Pi Browser or the Pi Sandbox. -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

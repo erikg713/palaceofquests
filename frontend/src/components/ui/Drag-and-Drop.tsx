@@ -56,8 +56,9 @@ function DragAndDrop<T>({
 
   // Styles
   const getItemStyle = useMemo(
-    () => (idx: number) => ({
-      opacity: draggedIdx === idx ? 0.5 : 1,
+    () =>
+      (idx: number): React.CSSProperties => ({
+        opacity: draggedIdx === idx ? 0.5 : 1,
       border:
         hoveredIdx === idx && draggedIdx !== null
           ? "2px dashed #0070f3"

@@ -1,0 +1,24 @@
+/* Item card (inventory grid). Drag-and-drop uses react-dnd; the card dims
+   while being dragged. */
+.item-card {
+  background: #1a1230;
+  border: 1px solid rgba(134, 93, 255, 0.35);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  cursor: grab;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.item-card.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.item-card-icon {
+  font-size: 1.75rem;
+}
+
+.item-card-name {
+  font-weight: 700;
+  margin-top: 0.25rem;
+}

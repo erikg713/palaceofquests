@@ -9,7 +9,7 @@ import axios from 'axios';
  */
 export const unlockRealm = async (userId, realmId) => {
   try {
-    const baseURL = process.env.API_BASE_URL || 'http://localhost:5000'; // Use environment variable for base URL
+    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
     const endpoint = `${baseURL}/unlock-realm`;
 
     const response = await axios.post(endpoint, {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../api/supabaseClient';
+import { supabase } from '../../api/supabaseClient';
 
 export default function ShopModal({ userId, onClose }) {
   const [shopItems, setShopItems] = useState([]);

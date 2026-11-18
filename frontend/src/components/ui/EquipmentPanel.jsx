@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import EquipmentSlot from './EquipmentSlot';
-import { equipItem } from '../hooks/equipmentActions';
+import { equipItem } from '../../hooks/useEquipmentActions';
 
 const SLOT_TYPES = ['weapon', 'armor', 'trinket'];
 

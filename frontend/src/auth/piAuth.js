@@ -21,7 +21,7 @@ export async function authenticateWithPi(scopes = ['username', 'payments']) {
 
     return { user: { uid: user.uid, username: user.username } };
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
       console.error('[PiAuth] Authentication error:', error);
     }

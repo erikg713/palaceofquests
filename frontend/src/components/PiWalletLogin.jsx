@@ -17,7 +17,7 @@ const PiWalletLogin = ({ onLogin }) => {
       onLogin?.(user);
     } catch (error) {
       // Log for development, but show friendly error to user
-      if (process.env.NODE_ENV !== 'production') {
+      if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
         console.error('Pi Auth Error:', error);
       }

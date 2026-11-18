@@ -1,6 +1,6 @@
 import React from 'react';
 import './LoadingScreen.css';
-import logo from '../assets/logos.png'; // Adjust path as needed
+import logo from '../../assets/logos.png'; // Adjust path as needed
 
 export default function LoadingScreen({ text = 'Loading your quest...' }) {
   return (

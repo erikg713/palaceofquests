@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import PlayerHUD from '../components/PlayerHUD';
+import PlayerHUD from '../components/ui/PlayerHUD';
 
 export default function GameOverlay({ children }) {
   const [userId, setUserId] = useState(null);

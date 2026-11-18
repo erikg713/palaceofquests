@@ -10,7 +10,12 @@ export default function NPCDialog({ npc }) {
   return (
     <div className="bg-gray-800 p-6 rounded-2xl text-white max-w-xl shadow-lg">
       <div className="flex items-center gap-4 mb-4">
-        <img src={npc.avatar} alt="npc" className="w-16 h-16 rounded-full" />
+        <div
+          className="w-16 h-16 rounded-full bg-quest-royal flex items-center justify-center text-2xl font-bold shrink-0"
+          aria-hidden="true"
+        >
+          {npc.name ? npc.name.charAt(0) : '?'}
+        </div>
         <h2 className="text-xl font-bold">{npc.name}</h2>
       </div>
       <p className="mb-4">{branch?.text || npc.dialogTree.greeting}</p>

@@ -1,54 +1,37 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 export default function Inventory({ userId }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-// Example snippet inside a Shop or ItemCard component
-import PiPaymentButton from '../components/PiPaymentButton';
-import { useUserInventory } from '../hooks/useUserInventory';
-
-const ShopItem = ({ item, userId, onEquip }) => {
-  const { addItem } = useUserInventory(userId);
-
-  return (
-    <PiPaymentButton
-      amount={1}
-      memo={`Buy ${item.name}`}
-      metadata={{ itemId: item.id, type: 'purchase' }}
-      onPaymentComplete={() => {
-        alert(`${item.name} purchased with Pi!`);
-        onEquip?.(item);
-        addItem({
-          id: item.id,
-          name: item.name,
-          rarity: item.rarity,
-          icon: item.icon,
-        });
-      }}
-    />
-  );
-};
-
-export default ShopItem;
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false);
+      setError(
+        'Inventory sync needs Supabase — connect VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to load your saved inventory.'
+      );
+      return;
+    }
 
     const fetchItems = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('inventory')
           .select('*')
           .eq('user_id', userId)
           .order('obtained_at', { ascending: false });
 
-        if (error) throw error;
+        if (fetchError) throw fetchError;
 
         setItems(data || []);
       } catch (err) {
@@ -92,5 +75,9 @@ export default ShopItem;
 }
 
 Inventory.propTypes = {
-  userId: PropTypes.string.isRequired,
+  userId: PropTypes.string,
+};
+
+Inventory.defaultProps = {
+  userId: null,
 };

@@ -12,7 +12,7 @@ class InventoryErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     // Optionally log error to an external service
-    if (process.env.NODE_ENV !== 'production') {
+    if (import.meta.env.DEV) {
       console.error('InventoryList crashed:', error, info);
     }
   }

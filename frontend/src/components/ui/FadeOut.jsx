@@ -1,11 +1,6 @@
 import React from 'react';
-export default function FadeOutBox() {
-  return (
-    <div className="w-64 h-32 bg-blue-500 text-white flex items-center justify-center animate-fade">
-      This will fade out
-    </div>
-  );
-}
+import PropTypes from 'prop-types';
+
 export default function FadeOut({ children, duration = '4s', delay = '0s' }) {
   return (
     <div
@@ -20,3 +15,15 @@ export default function FadeOut({ children, duration = '4s', delay = '0s' }) {
     </div>
   );
 }
+
+FadeOut.propTypes = {
+  children: PropTypes.node,
+  duration: PropTypes.string,
+  delay: PropTypes.string,
+};
+
+FadeOut.defaultProps = {
+  children: null,
+  duration: '4s',
+  delay: '0s',
+};

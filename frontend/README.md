@@ -1,79 +1,65 @@
-```markdown
 # Palace of Quests 🏰
 
-An immersive Web3 metaverse RPG built exclusively for the Pi Network.
+An immersive metaverse RPG built for the Pi Network. Explore realms, take
+quests, trade loot in the marketplace, and talk to NPCs — with Pi sign-in
+and Pi payments in Pi Browser.
 
-## Features 🎯
-- 🗺️ **Dynamic fantasy questing world**: Explore an ever-evolving landscape filled with challenges.
-- 🔗 **Pi Wallet authentication + smart payments**: Securely log in and transact using your Pi Wallet.
-- 🎮 **Inventory, Marketplace, Quest system**: Manage your items, trade with other players, and complete quests.
-- 💰 **Earn $PI through gameplay**: Play-to-earn with exciting rewards.
-- 👑 **Landing page for Pi Browser access**: Easily access the game via Pi Browser.
+## Screens
 
-## Setup ⚙️
-### Prerequisites
-Make sure you have the following installed:
-- Node.js >= v14
-- npm >= v6
+- **Home** (`/`) — hero, Pi sign-in, HUD, realm + quest previews
+- **Realms** (`/world`) — Moon Fortress and Plasma Citadel, unlockable with Pi
+- **Quests** (`/quests`, `/quests/:id`) — 6 seed quests; accept, complete,
+  earn XP / Pi / loot (progress saved on-device)
+- **Marketplace** (`/marketplace`) — the 8-item catalog, priced in Pi
+- **Inventory** (`/inventory`) — starter pack + quest loot
+- **NPCs** (`/npcs`) — dialog trees, incl. a Pi-payment quest branch
 
-### Installation
+## Run it
+
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_NAME/palace-of-quests.git
-cd palace-of-quests
-
-# Install dependencies
-```bash
-npm install react-unity-webgl
-npm install react-dnd react-dnd-html5-backend
-npm install three drei @react-three/fiber
-npm install three @react-three/fiber @react-three/drei
-npm create vite@latest frontend -- --template react-ts
-npm install tailwindcss postcss autoprefixer clsx tailwind-merge tailwindcss-animate
-npm install @radix-ui/react-dialog @radix-ui/react-tooltip @radix-ui/react-toast @radix-ui/react-avatar @radix-ui/react-tabs
-npm install react-hook-form zod @hookform/resolvers
-npm install lucide-react sonner
-```
 cd frontend
-npm install react-router-dom @supabase/supabase-js tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-# Start the development server
-npm run dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build (vite build)
+npm run preview  # serve the production build locally
+npm test         # vitest
+npm run type-check
 ```
 
----
+## How it works
 
-### Initialize Git 🚀
-```bash
-# Set up Git for your project
-git init
-git remote add origin https://github.com/YOUR_USERNAME/palace-of-quests.git
-git add .
-git commit -m "Initial Palace of Quests build"
-git push -u origin master
-```
-### Initialize Tailwind ###
-```bash
-npx tailwindcss init -p
-```
----
+- **Vite + React 18 + Tailwind 3.** Entry is `index.html` (root) →
+  `src/main.jsx` → `src/App.jsx` (navbar + router).
+- **Pi SDK 2.0 via `window.Pi`** — loaded from the `<script>` tag in
+  `index.html`. There is no npm Pi SDK. See `src/piClient.js`. Sign-in only
+  works inside Pi Browser or the Pi Sandbox; outside them the app says so
+  honestly. In `npm run dev` with no Pi SDK present, a mock Pioneer is
+  installed (`src/utils/mockpi.js`) so the game is explorable.
+- **Local data first.** Quests, realms, items, and NPCs live in `src/data/`.
+  Quest progress, realm unlocks, and loot persist in localStorage until the
+  backend is connected.
+- **Supabase is optional.** When `VITE_SUPABASE_URL` /
+  `VITE_SUPABASE_ANON_KEY` are set, `src/lib/supabaseClient.js` creates the
+  client; otherwise it is `null` and the game runs on local data.
+- **Pi payments need a backend.** `window.Pi.createPayment` opens the
+  payment in Pi Browser, but server approval/completion (`/payment/approve`,
+  `/payment/complete`) needs `VITE_API_BASE_URL` pointing at a backend that
+  calls the Pi Platform API with the app's Pi API key. Until then the app
+  says so instead of pretending a payment completed.
+- **QuestDAO is NOT wired.** A Solidity DAO cannot run on Pi Network
+  (Stellar-based, no EVM). Governance stays unwired until a home is picked
+  for it.
 
-## Contributing 🤝
-Contributions are welcome! Please follow these steps:
-- Fork the repository
-- Create a new branch (`git checkout -b feature/<your-feature-name>`)
-- Commit your changes (`git commit -m "Add new feature"`)
-- Push to the branch (`git push origin feature/<your-feature-name>`)
-- Open a Pull Request
+## Environment variables (all optional)
 
-## References 🔗
-- [Pi Network Documentation](https://pi.network/)
-- [Node.js Installation Guide](https://nodejs.org/)
+| Variable | What it does |
+|---|---|
+| `VITE_API_BASE_URL` | Backend for Pi payment approve/complete (default `http://localhost:5000`) |
+| `VITE_PI_APP_ID` | Pi app id, for server-side verification |
+| `VITE_PI_SANDBOX` | `true` (default, testnet) or `false` (mainnet) |
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
 
-## License 📜
-This project is licensed under the [MIT License](LICENSE).
-```
+## License
 
-### Tests ###
-npx eslint --fix .
-npx prettier --write .
+See the repo root `License.md`.

@@ -1,47 +1,41 @@
-# backend/flask_app/api/POST/payment/create.py
+import React from 'react';
+import PropTypes from 'prop-types';
 
-from flask import Blueprint, request, jsonify
-from werkzeug.exceptions import BadRequest
-from your_database_module import create_payment_record  # Replace with your actual DB logic
+// Reward modal shown after a realm unlock or quest reward grant.
+// `loot` is the granted reward object ({ name, description } or a string).
+export default function RewardModal({ loot, onClose }) {
+  const title = typeof loot === 'string' ? loot : loot?.name || 'Your reward';
+  const description =
+    typeof loot === 'object' && loot?.description ? loot.description : null;
 
-bp = Blueprint('payment_create', __name__, url_prefix='/api/POST/payment')
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-panel text-white text-center">
+        <div className="text-4xl mb-2" aria-hidden="true">
+          🎁
+        </div>
+        <h2 className="text-xl font-bold mb-2">Reward granted!</h2>
+        <p className="text-gold font-semibold">{title}</p>
+        {description && <p className="text-gray-300 mt-2">{description}</p>}
+        <button className="quest-button mt-6" onClick={onClose}>
+          Claim
+        </button>
+      </div>
+    </div>
+  );
+}
 
-@bp.route('/create', methods=['POST'])
-def create_payment():
-    try:
-        data = request.get_json(force=True)
-        uid = data.get('uid')
-        amount = data.get('amount')
-        memo = data.get('memo')
-        metadata = data.get('metadata', {})
+RewardModal.propTypes = {
+  loot: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.shape({
+      name: PropTypes.string,
+      description: PropTypes.string,
+    }),
+  ]),
+  onClose: PropTypes.func.isRequired,
+};
 
-        # Basic validation
-        if not uid or not amount:
-            raise BadRequest("Missing required fields: 'uid' and/or 'amount'.")
-
-        # Amount should be numeric
-        try:
-            amount = float(amount)
-            if amount <= 0:
-                raise ValueError
-        except (ValueError, TypeError):
-            raise BadRequest("'amount' must be a positive number.")
-
-        # Insert payment record (replace with your actual DB logic)
-        payment_id = create_payment_record(
-            uid=uid,
-            amount=amount,
-            memo=memo,
-            metadata=metadata
-        )
-
-        return jsonify({
-            "success": True,
-            "payment_id": payment_id,
-            "message": "Payment created successfully."
-        }), 201
-
-    except BadRequest as e:
-        return jsonify({"success": False, "error": str(e)}), 400
-    except Exception as e:
-        return jsonify({"success": False, "error": "Internal server error."}), 500
+RewardModal.defaultProps = {
+  loot: null,
+};

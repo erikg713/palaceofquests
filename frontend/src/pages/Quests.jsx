@@ -1,63 +1,82 @@
-import React, { useEffect, useState } from 'react';
-import QuestCard from '../components/QuestCard';
-import { supabase } from '../api/supabaseClient';
+import React, { useState, useCallback } from 'react';
 import QuestList from '../components/quest/QuestList';
+import {
+  questsWithProgress,
+  loadQuestProgress,
+  saveQuestProgress,
+} from '../data/quests';
+import { inventoryData } from '../data/items';
 
-export default function Quests() {
-  const [quests, setQuests] = useState([]);
+const LOOT_KEY = 'poq-inventory-v1';
 
-  useEffect(() => {
-    fetch('http://localhost:4000/api/quests')
-      .then(res => res.json())
-      .then(setQuests);
-  }, []);
-
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl mb-4">Available Quests</h1>
-      <QuestList quests={quests} />
-    </div>
-  );
+function grantLoot(itemId) {
+  if (!itemId) return;
+  try {
+    const raw = localStorage.getItem(LOOT_KEY);
+    const owned = raw ? JSON.parse(raw) : [];
+    if (!owned.includes(itemId)) {
+      owned.push(itemId);
+      localStorage.setItem(LOOT_KEY, JSON.stringify(owned));
+    }
+  } catch {
+    // storage unavailable — loot just won't persist
+  }
 }
 
-export default function Quests({ userId }) {
-  const [quests, setQuests] = useState([]);
-  const [loading, setLoading] = useState(true);
+function itemName(itemId) {
+  const all = Object.values(inventoryData).flat();
+  return all.find((i) => i.id === itemId)?.name || itemId;
+}
 
-  const fetchPlayerQuests = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('player_quests')
-      .select('*, quests(*)')
-      .eq('user_id', userId);
+export default function Quests() {
+  const [quests, setQuests] = useState(() => questsWithProgress());
+  const [notice, setNotice] = useState('');
 
-    if (error) {
-      console.error('Error fetching quests:', error);
-    } else {
-      const formatted = data.map(row => ({
-        ...row.quests,
-        ...row,
-      }));
-      setQuests(formatted);
-    }
-    setLoading(false);
-  };
+  const updateStatus = useCallback((questId, status) => {
+    const progress = loadQuestProgress();
+    progress[questId] = status;
+    saveQuestProgress(progress);
+    setQuests(questsWithProgress());
+  }, []);
 
-  const startQuest = async (questId) => {
-    await supabase
-      .from('player_quests')
-      .update({ status: 'in_progress', started_at: new Date() })
-      .eq('user_id', userId)
-      .eq('quest_id', questId);
-    fetchPlayerQuests();
-  };
+  const handleStart = useCallback(
+    (quest) => {
+      updateStatus(quest.id, 'in_progress');
+      setNotice(`Quest accepted: ${quest.title}`);
+    },
+    [updateStatus]
+  );
 
-  const completeQuest = async (questId) => {
-    await supabase
-      .from('player_quests')
-      .update({ status: 'completed', completed_at: new Date() })
-      .eq('user_id', userId)
-      .eq('quest_id', questId);
-    fetchPlayerQuests();
-  };
+  const handleComplete = useCallback(
+    (quest) => {
+      updateStatus(quest.id, 'completed');
+      grantLoot(quest.reward_item);
+      setNotice(
+        `Quest complete: ${quest.title} — +${quest.reward_xp} XP` +
+          (quest.reward_coins > 0 ? `, +${quest.reward_coins} Pi` : '') +
+          (quest.reward_item ? `, looted ${itemName(quest.reward_item)}` : '')
+      );
+    },
+    [updateStatus]
+  );
+
+  return (
+    <div className="py-8">
+      <h1 className="text-2xl font-bold mb-2">Available Quests</h1>
+      <p className="text-sm text-gray-400 mb-4">
+        Progress is saved on this device until the backend quest tables are
+        connected.
+      </p>
+      {notice && (
+        <div className="notice mb-4" role="status">
+          {notice}
+        </div>
+      )}
+      <QuestList
+        quests={quests}
+        onStart={handleStart}
+        onComplete={handleComplete}
+      />
+    </div>
+  );
 }

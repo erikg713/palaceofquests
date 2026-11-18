@@ -5,3 +5,7 @@
 body {
   @apply bg-shadow text-white font-sans;
 }
+
+#root {
+  min-height: 100vh;
+}

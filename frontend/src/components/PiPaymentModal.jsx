@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { initiatePiPayment } from '../utils/piPayment';
 
 export default function PiPaymentModal({ userId, visible, onClose, payload }) {
@@ -8,75 +9,54 @@ export default function PiPaymentModal({ userId, visible, onClose, payload }) {
   const handlePayment = async () => {
     setStatus('processing');
     setError(null);
-payload={{
-  amount: 5,
-  memo: "Fuse Nano Sword + Plasma Shield",
-  metadata: {
-    type: 'fuse',
-    items: ['nano_sword', 'plasma_shield']
-  },
-  onSuccess: async () => {
-    await fetch('/fuse-items', { method: 'POST', ... })
-  }
-}}
 
-  if (quest.requires_pi) {
-  // Show Pay with Pi modal
-  <PiPaymentModal
-    userId={piUser.uid}
-    payload={{
-      amount: 2,
-      memo: `Unlock ${quest.title}`,
-      metadata: { type: 'quest_unlock', quest_id: quest.id },
-      onSuccess: () => startQuest(quest.id)
-    }}
-  />
-}
-
-
-    const { amount, memo, metadata, onSuccess } = payload;
+    const { amount, memo, metadata, onSuccess } = payload || {};
 
     try {
       await initiatePiPayment({
         uid: userId,
         amount,
         memo,
-        metadata
+        metadata,
       });
 
-      if (onSuccess) await onSuccess(); // call logic like unlock, grant item
+      if (onSuccess) await onSuccess();
 
       setStatus('success');
     } catch (err) {
       console.error(err);
       setStatus('failed');
-      setError('Pi payment failed or cancelled.');
+      setError(err?.message || 'Pi payment failed or cancelled.');
     }
   };
 
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-white text-black rounded-xl p-6 w-[90%] max-w-md shadow-xl">
+    <div className="modal-backdrop">
+      <div className="modal-panel text-white">
         <h2 className="text-xl font-bold mb-3">💰 Pay with Pi</h2>
-        <p className="mb-4">{payload.memo}</p>
+        <p className="mb-4 text-gray-300">{payload?.memo}</p>
 
         {status === 'idle' && (
           <button
-            className="bg-yellow-500 text-black font-bold py-2 px-4 rounded"
+            className="bg-gold text-black font-bold py-2 px-4 rounded"
             onClick={handlePayment}
           >
-            Confirm & Pay {payload.amount} π
+            Confirm &amp; Pay {payload?.amount} π
           </button>
         )}
 
-        {status === 'processing' && <p className="text-blue-600">Processing payment...</p>}
-        {status === 'success' && <p className="text-green-600">✅ Payment successful!</p>}
-        {status === 'failed' && <p className="text-red-600">{error}</p>}
+        {status === 'processing' && (
+          <p className="text-blue-400">Processing payment…</p>
+        )}
+        {status === 'success' && (
+          <p className="text-green-400">✅ Payment successful!</p>
+        )}
+        {status === 'failed' && <p className="text-red-400">{error}</p>}
 
         <button
-          className="mt-4 text-sm underline text-gray-500"
+          className="mt-4 text-sm underline text-gray-400"
           onClick={() => {
             onClose();
             setStatus('idle');
@@ -89,3 +69,21 @@ payload={{
     </div>
   );
 }
+
+PiPaymentModal.propTypes = {
+  userId: PropTypes.string,
+  visible: PropTypes.bool,
+  onClose: PropTypes.func.isRequired,
+  payload: PropTypes.shape({
+    amount: PropTypes.number,
+    memo: PropTypes.string,
+    metadata: PropTypes.object,
+    onSuccess: PropTypes.func,
+  }),
+};
+
+PiPaymentModal.defaultProps = {
+  userId: undefined,
+  visible: false,
+  payload: undefined,
+};

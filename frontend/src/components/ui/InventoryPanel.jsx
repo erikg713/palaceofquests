@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import ItemDetailModal from './ItemDetailModal';
-import './styles/ui.css';
+import '../styles/ui.css';
 
 export default function InventoryPanel({ inventory }) {
   const [selectedItem, setSelectedItem] = useState(null);

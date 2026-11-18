@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import HotbarSlot from './HotbarSlot';
-import { fetchHotbar, updateHotbarSlot } from '../hooks/useHotbar';
+import { fetchHotbar, updateHotbarSlot } from '../../hooks/useHotbar';
 
 export default function Hotbar({ userId, inventory }) {
   const [slots, setSlots] = useState(Array(6).fill(null));

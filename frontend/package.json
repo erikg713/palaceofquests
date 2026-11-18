@@ -1,67 +1,62 @@
 {
-  "name": "palaceofquests-frontend",
-  "version": "1.0.0",
-  "private": true,
-  "description": "A polished, professional Pi Network dApp frontend for the Palace of Quests metaverse.",
   "author": "Erik G.",
-  "license": "SEE LICENSE IN LICENSE",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/erikg713/palaceofquests.git",
-    "directory": "frontend"
-  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
   "bugs": {
     "url": "https://github.com/erikg713/palaceofquests/issues"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.45.4",
+    "axios": "1.7.7",
+    "clsx": "2.1.1",
+    "prop-types": "15.8.1",
+    "react": "18.2.0",
+    "react-dnd": "16.0.1",
+    "react-dnd-html5-backend": "16.0.1",
+    "react-dom": "18.2.0",
+    "react-router-dom": "6.28.0",
+    "tailwind-merge": "2.5.2"
+  },
+  "description": "Palace of Quests metaverse frontend \u2014 Pi Network dApp (Vite + React).",
+  "devDependencies": {
+    "@types/react": "18.2.14",
+    "@types/react-dom": "18.2.7",
+    "@vitejs/plugin-react": "4.7.0",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.4.47",
+    "tailwindcss": "3.4.13",
+    "typescript": "5.4.5",
+    "vite": "6.4.4",
+    "vitest": "3.2.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "homepage": "https://github.com/erikg713/palaceofquests#readme",
   "keywords": [
     "pi-network",
     "dapp",
-    "web3",
     "frontend",
     "react",
-    "vite",
-    "typescript"
+    "vite"
   ],
+  "license": "SEE LICENSE IN LICENSE",
+  "name": "palaceofquests-frontend",
+  "private": true,
+  "repository": {
+    "directory": "frontend",
+    "type": "git",
+    "url": "https://github.com/erikg713/palaceofquests.git"
+  },
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
+    "dev": "vite",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --max-warnings=0",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,md,json}\"",
-    "clean": "rimraf dist",
     "test": "vitest run",
-    "prepare": "husky install",
-    "audit": "npm audit --audit-level=moderate"
+    "type-check": "tsc --noEmit"
   },
-  "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "@pi-network/pi-sdk": "2.0.0"
-  },
-  "devDependencies": {
-    "@types/react": "18.2.14",
-    "@types/react-dom": "18.2.7",
-    "@vitejs/plugin-react": "4.7.0",
-    "typescript": "5.4.0",
-    "eslint": "8.57.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-plugin-react": "7.34.0",
-    "eslint-plugin-react-hooks": "4.6.0",
-    "eslint-plugin-import": "2.28.1",
-    "prettier": "3.2.5",
-    "vite": "6.4.3",
-    "rimraf": "5.0.5",
-    "vitest": "3.2.6",
-    "husky": "9.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not op_mini all"
-  ]
+  "version": "1.0.0"
 }

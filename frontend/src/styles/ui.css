@@ -1,0 +1,209 @@
+/* Palace of Quests — shared game styles (plain CSS, no build-time deps).
+   Tailwind utilities cover layout; this file holds the palace look. */
+
+:root {
+  --pi-violet: #865dff;
+  --pi-violet-deep: #6b48c8;
+  --gold: #f5c542;
+  --panel: #17112b;
+  --panel-border: rgba(134, 93, 255, 0.35);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% -10%, #241a4d 0%, #0a0a1a 55%, #000 100%);
+  background-attachment: fixed;
+}
+
+/* --- hero --- */
+.hero {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+}
+
+.hero-title {
+  font-family: Orbitron, system-ui, sans-serif;
+  font-size: clamp(2rem, 7vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #fff 20%, var(--gold) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-subtitle {
+  color: #c9c2e0;
+  margin-top: 0.5rem;
+}
+
+/* --- cards --- */
+.palace-card {
+  background: linear-gradient(180deg, rgba(38, 28, 74, 0.9), rgba(20, 15, 40, 0.9));
+  border: 1px solid var(--panel-border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.palace-card h2,
+.palace-card h3 {
+  color: #fff;
+}
+
+/* --- quest cards --- */
+.quest-card {
+  background: linear-gradient(180deg, rgba(38, 28, 74, 0.9), rgba(20, 15, 40, 0.9));
+  border: 1px solid var(--panel-border);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quest-card.status-completed {
+  border-color: rgba(74, 222, 128, 0.5);
+  opacity: 0.85;
+}
+
+.quest-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.quest-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.quest-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: rgba(134, 93, 255, 0.2);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  white-space: nowrap;
+}
+
+.quest-description {
+  color: #c9c2e0;
+  font-size: 0.9rem;
+}
+
+.quest-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--gold);
+}
+
+.quest-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.quest-button {
+  background: var(--pi-violet);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.5rem 1.1rem;
+  border-radius: 0.6rem;
+  transition: background 0.15s;
+}
+
+.quest-button:hover {
+  background: var(--pi-violet-deep);
+}
+
+.quest-button.secondary {
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: #e6e0ff;
+}
+
+/* --- realm cards --- */
+.realm-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.realm-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--pi-violet), var(--gold));
+}
+
+/* --- marketplace --- */
+.marketplace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.marketplace-page h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+/* --- modal --- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+}
+
+.modal-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+/* --- misc --- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(245, 197, 66, 0.15);
+  border: 1px solid rgba(245, 197, 66, 0.4);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+}
+
+.notice {
+  background: rgba(245, 197, 66, 0.08);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  color: #f3e2ae;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+}

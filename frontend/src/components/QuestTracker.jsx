@@ -103,4 +103,3 @@ export default function QuestTracker({ userId }) {
 QuestTracker.propTypes = {
   userId: PropTypes.string.isRequired,
 };
-}

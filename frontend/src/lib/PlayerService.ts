@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from './supabaseClient';
 
 /**
  * Retrieves a player profile by their Pi Network UID.
@@ -9,6 +9,10 @@ import { supabase } from './supabase';
 export async function fetchPlayerProfile(pi_uid: string): Promise<Record<string, any> | null> {
   if (!pi_uid?.trim()) {
     console.warn('[PlayerService] fetchPlayerProfile called with empty pi_uid');
+    return null;
+  }
+  if (!supabase) {
+    console.warn('[PlayerService] Supabase is not configured.');
     return null;
   }
 

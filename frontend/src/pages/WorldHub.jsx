@@ -1,152 +1,110 @@
-import React, { useState, useContext, useCallback, useMemo } from 'react';
-import { usePlayer } from '../context/PlayerContext';
+import React, { useContext, useState } from 'react';
 import { PiWalletContext } from '../context/PiWalletContext';
-import PiPaymentModal from '../components/PiPaymentModal';
-import RewardModal from '../components/RewardModal';
 import PiPaymentButton from '../components/PiPaymentButton';
-// src/pages/WorldHub.jsx
-import React from 'react';
-import PiPaymentButton from '../components/PiPaymentButton';
+import { realms } from '../data/realms';
 
-const WorldHub = () => {
-  return (
-    <div className="p-4">
-      {/* ...Teleport and other UI... */}
+const UNLOCKED_KEY = 'poq-realms-v1';
 
-      {/* Pi Payment for Launch Access */}
-      <PiPaymentButton
-        amount={1}
-        memo="Launch Protocol Alpha"
-        metadata={{ realm: 'Moon Fortress', type: 'launch' }}
-        onPaymentComplete={() => alert('🚀 Launch fee paid. Teleport unlocked!')}
-      />
-    </div>
-  );
-};
-
-export default WorldHub;
-
-const REALM = {
-  id: 'moon_fortress',
-  name: 'Moon Fortress',
-  unlockCost: 2,
-};
-
-const WorldHub = () => {
-  const { player } = usePlayer();
-  const { walletAddress, piUser } = useContext(PiWalletContext);
-
-  const [showPayModal, setShowPayModal] = useState(false);
-  const [showReward, setShowReward] = useState(false);
-  const [loot, setLoot] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const API_BASE = useMemo(() => import.meta.env.VITE_API_BASE_URL, []);
-  const unlockUrl = useMemo(() => `${API_BASE}/unlock-realm`, [API_BASE]);
-  const lootUrl = useMemo(() => `${API_BASE}/grant-loot`, [API_BASE]);
-
-  const fetchOptions = useMemo(
-    () => ({
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user: piUser, realm: REALM.id }),
-    }),
-    [piUser]
-  );
-
-  const handleUnlockRealm = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const [unlockRes, lootRes] = await Promise.all([
-        fetch(unlockUrl, fetchOptions),
-        fetch(lootUrl, fetchOptions),
-      ]);
-      if (!unlockRes.ok) throw new Error('Failed to unlock this realm.');
-      if (!lootRes.ok) throw new Error('Could not grant loot.');
-      const lootData = await lootRes.json();
-      setLoot(lootData.granted || null);
-      setShowReward(true);
-      setShowPayModal(false);
-    } catch (err) {
-      setError(
-        typeof err?.message === 'string'
-          ? err.message
-          : 'Failed to unlock the realm. Please try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [unlockUrl, lootUrl, fetchOptions]);
-
-  // UI: If wallet is not connected
-  if (!walletAddress) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div className="bg-white/80 rounded-xl shadow-lg p-8 max-w-lg">
-          <h2 className="text-2xl font-semibold mb-4">Wallet Not Connected</h2>
-          <p className="mb-6 text-gray-700">
-            Connect your Pi Wallet to explore and unlock new realms in the Palace of Quests metaverse.
-          </p>
-          <PiPaymentButton />
-        </div>
-      </div>
-    );
+function loadUnlocked() {
+  try {
+    const raw = localStorage.getItem(UNLOCKED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
   }
+}
 
-  // UI: Main World Hub
+function saveUnlocked(ids) {
+  try {
+    localStorage.setItem(UNLOCKED_KEY, JSON.stringify(ids));
+  } catch {
+    // storage unavailable — unlocks just won't persist
+  }
+}
+
+export default function WorldHub() {
+  const { walletAddress, piUser, connectWallet } = useContext(PiWalletContext);
+  const [unlocked, setUnlocked] = useState(loadUnlocked);
+  const [notice, setNotice] = useState('');
+
+  const handleUnlocked = (realm) => {
+    if (!unlocked.includes(realm.id)) {
+      const next = [...unlocked, realm.id];
+      setUnlocked(next);
+      saveUnlocked(next);
+    }
+    setNotice(`${realm.name} unlocked — the way is open.`);
+  };
+
   return (
-    <div className="min-h-[70vh] flex flex-col items-center py-12 bg-gradient-to-b from-gray-100 to-indigo-100">
-      <div className="bg-white/90 rounded-2xl shadow-xl p-10 w-full max-w-xl transition-all">
-        <h1 className="text-3xl font-bold text-indigo-800 mb-2 text-center">
-          Welcome, {player?.username || 'Explorer'}
-        </h1>
-        <p className="text-lg text-gray-600 text-center mb-8">
-          Ready to unlock the secrets of the <span className="font-semibold">{REALM.name}</span>?
-        </p>
+    <div className="py-8">
+      <h1 className="text-2xl font-bold mb-2">
+        Welcome, {piUser ? piUser.username : 'Explorer'}
+      </h1>
+      <p className="text-gray-400 text-sm mb-6">
+        The World Hub — every realm of the palace, from one gate.
+      </p>
 
-        <div className="flex flex-col items-center gap-6">
-          <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold text-indigo-700">{REALM.name}</h2>
-              <p className="text-gray-500">Realm Unlock Cost: <span className="font-bold">{REALM.unlockCost} Pi</span></p>
-            </div>
-            <button
-              onClick={() => setShowPayModal(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium shadow transition disabled:opacity-50"
-              disabled={loading}
-            >
-              {loading ? 'Unlocking...' : `Unlock ${REALM.name}`}
-            </button>
-          </div>
-          {error && (
-            <div className="w-full text-red-600 bg-red-50 border border-red-200 px-4 py-2 rounded-lg text-center">
-              {error}
-            </div>
-          )}
+      {!walletAddress && (
+        <div className="notice mb-6">
+          Connect your Pi Wallet to unlock realms with Pi. You can still look
+          around without signing in.
+          <button
+            onClick={connectWallet}
+            className="ml-3 font-semibold text-gold hover:underline"
+          >
+            Connect Pi Wallet
+          </button>
         </div>
+      )}
+
+      {notice && (
+        <div className="notice mb-6" role="status">
+          {notice}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {realms.map((realm) => {
+          const isUnlocked = unlocked.includes(realm.id);
+          return (
+            <div key={realm.id} className="palace-card realm-card">
+              <h2 className="text-xl font-bold">{realm.name}</h2>
+              <p className="text-sm text-gray-300 mt-1">{realm.description}</p>
+              <p className="mt-3 text-sm">
+                Unlock cost:{' '}
+                <span className="text-gold font-bold">
+                  {realm.unlockCost} Pi
+                </span>
+              </p>
+              <div className="mt-4">
+                {isUnlocked ? (
+                  <span className="text-green-400 font-semibold">
+                    ✓ Unlocked — explore freely.
+                  </span>
+                ) : walletAddress ? (
+                  <PiPaymentButton
+                    amount={realm.unlockCost}
+                    memo={`Unlock ${realm.name}`}
+                    metadata={{ realm: realm.id, type: 'realm_unlock' }}
+                    onPaymentComplete={() => handleUnlocked(realm)}
+                  />
+                ) : (
+                  <span className="text-sm text-gray-400">
+                    Sign in with Pi to unlock this realm.
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Payment Modal */}
-      {showPayModal && (
-        <PiPaymentModal
-          onClose={() => setShowPayModal(false)}
-          onConfirm={handleUnlockRealm}
-          realm={REALM}
-          loading={loading}
-        />
-      )}
-
-      {/* Reward Modal */}
-      {showReward && (
-        <RewardModal
-          loot={loot}
-          onClose={() => setShowReward(false)}
-        />
-      )}
+      <p className="text-xs text-gray-500 mt-6">
+        Realm unlocks are recorded on this device for now. Pi payments need a
+        backend to approve and complete them — until one is connected, the
+        payment step runs in Pi Browser up to server approval.
+      </p>
     </div>
   );
-};
-
-export default WorldHub;
+}

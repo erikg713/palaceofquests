@@ -1,65 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import Dashboard from './components/Dashboard';
-import Unauthorized from './components/Unauthorized';
-import Loading from './components/Loading';
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import Navbar from './components/Navbar.tsx';
 import Router from './router';
 
+/**
+ * App shell: the navbar plus the router. Pi sign-in is offered on the Home
+ * screen (and the wallet chip in the navbar shows the signed-in Pioneer);
+ * the game stays explorable without Pi so it can be previewed anywhere.
+ * The navbar lives INSIDE the BrowserRouter — its NavLinks need router
+ * context.
+ */
 export default function App() {
-  return <Router />;
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen bg-shadow text-white font-sans">
+        <Navbar />
+        <main className="mx-auto max-w-5xl px-4 pb-16">
+          <Router />
+        </main>
+        <footer className="border-t border-white/10 py-6 text-center text-xs text-gray-400">
+          Palace of Quests — a Pi Network metaverse. Testnet. QuestDAO governance
+          is not wired up (a Solidity DAO cannot run on Pi Network).
+        </footer>
+      </div>
+    </BrowserRouter>
+  );
 }
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const Pi = window.Pi;
-
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      setUser(JSON.parse(stored));
-      setLoading(false);
-      return;
-    }
-
-    if (!Pi) {
-      setError('Pi SDK not found. Please open this app in the Pi Browser.');
-      setLoading(false);
-      return;
-    }
-
-    Pi.authenticate(['username'], async (err, auth) => {
-      if (err) {
-        setError('Authentication with Pi Network failed.');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await fetch('http://localhost:5000/auth/pi', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken: auth.accessToken }),
-        });
-
-        if (!res.ok) throw new Error('Backend auth failed');
-
-        const userData = await res.json();
-        localStorage.setItem('user', JSON.stringify(userData));
-        setUser(userData);
-      } catch (err) {
-        console.error(err);
-        setError('Server error while verifying user.');
-      } finally {
-        setLoading(false);
-      }
-    });
-  }, []);
-
-  if (loading) return <Loading />;
-  if (error) return <div className="error">{error}</div>;
-
-  if (user && user.role !== 'admin') return <Unauthorized user={user} />;
-
-  return user ? <Dashboard user={user} /> : <div>Not authenticated.</div>;
-}
-

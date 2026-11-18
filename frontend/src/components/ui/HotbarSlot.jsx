@@ -1,5 +1,5 @@
 import { useDrop } from 'react-dnd';
-import { useItem } from '../hooks/inventoryActions';
+import { useItem } from '../../hooks/useInventoryActions';
 
 export default function HotbarSlot({ index, item, onDrop, userId }) {
   const [{ isOver }, dropRef] = useDrop(() => ({

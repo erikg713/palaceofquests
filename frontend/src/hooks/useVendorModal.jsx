@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import MarketplaceItem from './MarketplaceItem';
+import MarketplaceItem from '../components/MarketplaceItem';
 import { buyMarketItem } from '../hooks/marketActions';
 
 const VendorModal = ({ userId, onClose }) => {

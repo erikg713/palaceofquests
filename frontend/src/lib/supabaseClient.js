@@ -1,24 +1,19 @@
 // src/lib/supabaseClient.js
+//
+// The canonical Supabase client. When VITE_SUPABASE_URL /
+// VITE_SUPABASE_ANON_KEY are not configured (local play, no backend yet),
+// `supabase` is null and `isSupabaseConfigured` is false — callers must
+// check and fall back to local data instead of crashing at import time.
 
 import { createClient } from '@supabase/supabase-js';
 
-/**
- * Gets required env variables, throws if not found.
- * @param {string} key - The environment variable key.
- * @returns {string} - The environment variable value.
- */
-function getEnv(key) {
-  const value = import.meta.env[key];
-  if (!value) {
-    throw new Error(`Environment variable ${key} is missing.`);
-  }
-  return value;
-}
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-const SUPABASE_URL = getEnv('VITE_SUPABASE_URL');
-const SUPABASE_ANON_KEY = getEnv('VITE_SUPABASE_ANON_KEY');
+export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabase = isSupabaseConfigured
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
-// Optionally, provide a default export for flexibility.
 export default supabase;
